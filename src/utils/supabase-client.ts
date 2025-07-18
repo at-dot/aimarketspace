@@ -1,7 +1,7 @@
 export function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+
   return {
     auth: {
       recover: async (email: string, redirectTo: string) => {
@@ -9,20 +9,20 @@ export function getSupabaseClient() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': supabaseAnonKey!
+            'apikey': supabaseAnonKey,
           },
-          body: JSON.stringify({ email, redirectTo })
+          body: JSON.stringify({ email, redirectTo }),
         });
         return response;
       },
-      setSession: async (tokens: any) => {
-        // Implementacija za reset password
+      setSession: async (_tokens: unknown) => {
+        // Add logic here if needed
         return { error: null };
       },
-      updateUser: async (data: any) => {
-        // Implementacija za update password
+      updateUser: async (_data: unknown) => {
+        // Add logic here if needed
         return { error: null };
-      }
-    }
+      },
+    },
   };
 }
