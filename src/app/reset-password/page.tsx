@@ -6,10 +6,11 @@ export default function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [errorMsg, setErrorMsg] = useState(''); // Renamed to avoid ESLint confusion
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,17 +27,17 @@ export default function ResetPassword() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setErrorMsg('Passwords do not match');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setErrorMsg('Password must be at least 6 characters');
       return;
     }
 
     setLoading(true);
-    setError('');
+    setErrorMsg('');
     setMessage('');
 
     try {
@@ -57,10 +58,10 @@ export default function ResetPassword() {
         setMessage('Password successfully reset! Redirecting to login...');
         setTimeout(() => router.push('/'), 2000);
       } else {
-        setError(data.error || 'Failed to reset password. Please try again.');
+        setErrorMsg(data.error || 'Failed to reset password. Please try again.');
       }
-    } catch (error) {
-      setError('An unexpected error occurred');
+    } catch {
+      setErrorMsg('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -142,9 +143,9 @@ export default function ResetPassword() {
             </div>
           )}
 
-          {error && token && (
+          {errorMsg && token && (
             <div className="mt-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg text-white text-sm text-center">
-              {error}
+              {errorMsg}
             </div>
           )}
 
