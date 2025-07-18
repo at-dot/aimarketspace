@@ -15,14 +15,14 @@ export function getSupabaseClient() {
         });
         return response;
       },
-      setSession: async (_tokens: unknown) => {
-        // Add logic here if needed
+      setSession: async () => {
+        // Implement logic if needed
         return { error: null };
       },
-      updateUser: async (_data: unknown) => {
-        // Add logic here if needed
+      updateUser: async () => {
+        // Implement logic if needed
         return { error: null };
-      },
-    },
+      }
+    }
   };
 }
