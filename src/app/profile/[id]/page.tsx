@@ -28,9 +28,7 @@ export default function ViewProfile() {
   const params = useParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-  // Sparkle component
   const Sparkle = ({ size = 24 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
       <path d="M12 0 C13 6, 16 9, 22 10 C16 11, 13 14, 12 20 C11 14, 8 11, 2 10 C8 9, 11 6, 12 0 Z" 
@@ -39,7 +37,6 @@ export default function ViewProfile() {
     </svg>
   );
 
-  // Extract video ID from YouTube/Loom URL
   const extractVideoId = (url: string) => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
@@ -47,15 +44,12 @@ export default function ViewProfile() {
       /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
       /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/
     ];
-    
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match) return { platform: 'youtube', id: match[1] };
     }
-    
     const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
     if (loomMatch) return { platform: 'loom', id: loomMatch[1] };
-    
     return null;
   };
 
@@ -68,10 +62,9 @@ export default function ViewProfile() {
   useEffect(() => {
     if (user && params.id) {
       const profileId = params.id as string;
-      // Provera da li je ovo profil trenutnog korisnika
-      setIsOwnProfile(profileId === user.id);
       fetchProfile(profileId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, params.id]);
 
   const fetchProfile = async (profileId: string) => {
@@ -81,7 +74,7 @@ export default function ViewProfile() {
         {
           headers: {
             'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            'Authorization': `Bearer ${user?.access_token}`
+            'Authorization': user && 'access_token' in user ? `Bearer ${(user as any).access_token}` : ''
           }
         }
       );
@@ -93,7 +86,7 @@ export default function ViewProfile() {
         }
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      // silent
     } finally {
       setIsLoading(false);
     }
@@ -117,12 +110,9 @@ export default function ViewProfile() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex">
-      {/* Animated shimmer gradient background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-700 via-indigo-800 to-purple-700 animate-shimmer" />
       </div>
-      
-      {/* Floating sparkle elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-32 animate-float opacity-40">
           <Sparkle size={24} />
@@ -134,12 +124,9 @@ export default function ViewProfile() {
           <Sparkle size={24} />
         </div>
       </div>
-
-      {/* Sidebar */}
       <aside className="fixed left-0 top-0 w-64 h-full bg-white/10 backdrop-blur-md shadow-lg z-50 flex flex-col">
         <div className="p-6 flex flex-col h-full text-white">
           <div className="mb-8" style={{height: '1.6cm'}}></div>
-          
           <nav className="space-y-2 overflow-y-auto flex-1 pr-2">
             <button 
               onClick={() => router.push('/dashboard')}
@@ -148,7 +135,6 @@ export default function ViewProfile() {
             >
               Dashboard
             </button>
-            
             <button 
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed"
               disabled
@@ -156,8 +142,6 @@ export default function ViewProfile() {
             >
               Under Construction
             </button>
-            
-            {/* My Profile dugme se prikazuje samo ako korisnik ima svoj profil */}
             {user && (
               <button 
                 onClick={() => router.push('/profile')}
@@ -167,14 +151,12 @@ export default function ViewProfile() {
                 My Profile
               </button>
             )}
-            
             <button 
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{fontFamily: 'Rockwell, serif'}}
             >
               Docs
             </button>
-            
             <button 
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{fontFamily: 'Rockwell, serif'}}
@@ -182,7 +164,6 @@ export default function ViewProfile() {
               Settings
             </button>
           </nav>
-          
           <div className="border-t border-white/20 pt-6 mt-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -206,10 +187,7 @@ export default function ViewProfile() {
           </div>
         </div>
       </aside>
-
-      {/* Main Content */}
       <div className="flex-1 ml-64 relative z-10">
-        {/* Header - isti kao u Dashboard */}
         <header className="bg-white/10 backdrop-blur-md shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
@@ -223,8 +201,6 @@ export default function ViewProfile() {
             </p>
           </div>
         </header>
-
-        {/* Back button section */}
         <div className="bg-white/5 backdrop-blur-sm py-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <button
@@ -236,10 +212,8 @@ export default function ViewProfile() {
             </button>
           </div>
         </div>
-
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-xl p-8">
-            {/* Avatar and Name Section */}
             <div className="flex items-center gap-8 mb-8">
               <div className="relative">
                 {profile.avatar_url ? (
@@ -256,7 +230,6 @@ export default function ViewProfile() {
                   </div>
                 )}
               </div>
-              
               <div>
                 <h3 className="text-3xl font-bold text-white" style={{fontFamily: 'Rockwell, serif'}}>
                   {profile.full_name || 'Name not set'}
@@ -266,9 +239,7 @@ export default function ViewProfile() {
                 </p>
               </div>
             </div>
-
             <div className="space-y-6">
-              {/* Languages */}
               {profile.languages && profile.languages.length > 0 && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -281,8 +252,6 @@ export default function ViewProfile() {
                   </ul>
                 </div>
               )}
-
-              {/* About */}
               {profile.bio && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -291,8 +260,6 @@ export default function ViewProfile() {
                   <p className="text-white/90 leading-relaxed" style={{fontFamily: 'Rockwell, serif'}}>{profile.bio}</p>
                 </div>
               )}
-
-              {/* Tools & Skills */}
               {profile.tools_skills && profile.tools_skills.length > 0 && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -305,8 +272,6 @@ export default function ViewProfile() {
                   </ul>
                 </div>
               )}
-
-              {/* I build solutions for */}
               {profile.solutions_for && profile.solutions_for.length > 0 && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -319,8 +284,6 @@ export default function ViewProfile() {
                   </ul>
                 </div>
               )}
-
-              {/* Experience */}
               {profile.experience && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -329,8 +292,6 @@ export default function ViewProfile() {
                   <p className="text-white/90 whitespace-pre-wrap leading-relaxed" style={{fontFamily: 'Rockwell, serif'}}>{profile.experience}</p>
                 </div>
               )}
-
-              {/* Approximate Pricing */}
               {profile.approximate_pricing && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -339,8 +300,6 @@ export default function ViewProfile() {
                   <p className="text-white/90" style={{fontFamily: 'Rockwell, serif'}}>{profile.approximate_pricing}</p>
                 </div>
               )}
-
-              {/* Video Showcase */}
               {profile.video_url && extractVideoId(profile.video_url) && (
                 <div>
                   <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
@@ -377,51 +336,44 @@ export default function ViewProfile() {
                   )}
                 </div>
               )}
-
-              {/* Additional Info */}
               {profile.additional_info && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>
                     Additional Info
                   </label>
-                  <p className="text-white/90 whitespace-pre-wrap leading-relaxed" style={{fontFamily: 'Rockwell, serif'}}>{profile.additional_info}</p>
+                  <p className="text-white/90 whitespace-pre-wrap leading-relaxed" style={{ fontFamily: 'Rockwell, serif' }}>{profile.additional_info}</p>
                 </div>
               )}
-
-              {/* Contact Info */}
               <div className="border-t border-white/20 pt-6">
-                <h3 className="text-lg font-bold text-white mb-4" style={{fontFamily: 'Rockwell, serif'}}>
-                  Let's Connect:
+                <h3 className="text-lg font-bold text-white mb-4" style={{ fontFamily: 'Rockwell, serif' }}>
+                  Let&apos;s Connect:
                 </h3>
-                
                 <div className="space-y-4">
                   {profile.contact_email && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2" style={{fontFamily: 'Rockwell, serif'}}>
+                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
                         Email:
                       </label>
-                      <p className="text-white" style={{fontFamily: 'Rockwell, serif'}}>{profile.contact_email}</p>
+                      <p className="text-white" style={{ fontFamily: 'Rockwell, serif' }}>{profile.contact_email}</p>
                     </div>
                   )}
-
                   {profile.linkedin_url && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2" style={{fontFamily: 'Rockwell, serif'}}>
+                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
                         LinkedIn:
                       </label>
-                      <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline" style={{fontFamily: 'Rockwell, serif'}}>
+                      <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline" style={{ fontFamily: 'Rockwell, serif' }}>
                         {profile.linkedin_url}
                       </a>
                     </div>
                   )}
-
                   {profile.booking_url && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2" style={{fontFamily: 'Rockwell, serif'}}>
+                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
                         Book a Call:
                       </label>
-                      <a href={profile.booking_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline" style={{fontFamily: 'Rockwell, serif'}}>
-                        Book a meeting
+                      <a href={profile.booking_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline" style={{ fontFamily: 'Rockwell, serif' }}>
+                        {profile.booking_url}
                       </a>
                     </div>
                   )}
@@ -431,33 +383,26 @@ export default function ViewProfile() {
           </div>
         </main>
       </div>
-
-      {/* CSS for animations */}
-      <style jsx>{`
+            <style jsx>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-        
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-20px); }
         }
-        
         @keyframes float-delayed {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-15px); }
         }
-        
         .animate-shimmer {
           background-size: 200% 100%;
           animation: shimmer 8s linear infinite;
         }
-        
         .animate-float {
           animation: float 6s ease-in-out infinite;
         }
-        
         .animate-float-delayed {
           animation: float-delayed 8s ease-in-out infinite;
         }
