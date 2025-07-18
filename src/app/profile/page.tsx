@@ -520,7 +520,12 @@ export default function Profile() {
                         type="text"
                         value={newLanguage}
                         onChange={(e) => setNewLanguage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
+                        onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addLanguage();
+                          }
+                        }}
                         className="flex-1 px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                         style={{ fontFamily: 'Rockwell, serif' }}
                         placeholder="Add a language..."
@@ -580,7 +585,12 @@ export default function Profile() {
                         type="text"
                         value={newSkill}
                         onChange={(e) => setNewSkill(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                        onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addSkill();
+                          }
+                        }}
                         className="flex-1 px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                         style={{ fontFamily: 'Rockwell, serif' }}
                         placeholder="Add a skill..."
