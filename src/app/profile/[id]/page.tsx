@@ -31,18 +31,16 @@ export default function ViewProfile() {
 
   const Sparkle = ({ size = 24 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
-      <path d="M12 0 C13 6, 16 9, 22 10 C16 11, 13 14, 12 20 C11 14, 8 11, 2 10 C8 9, 11 6, 12 0 Z" 
-            fill="white" 
-            stroke="none"/>
+      <path d="M12 0 C13 6, 16 9, 22 10 C16 11, 13 14, 12 20 C11 14, 8 11, 2 10 C8 9, 11 6, 12 0 Z" fill="white" stroke="none" />
     </svg>
   );
 
-  const extractVideoId = (url: string) => {
+  function extractVideoId(url: string): { platform: string; id: string } | null {
     const patterns = [
       /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
       /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
       /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-      /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/
+      /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
     ];
     for (const pattern of patterns) {
       const match = url.match(pattern);
@@ -51,7 +49,7 @@ export default function ViewProfile() {
     const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
     if (loomMatch) return { platform: 'loom', id: loomMatch[1] };
     return null;
-  };
+  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -61,7 +59,7 @@ export default function ViewProfile() {
 
   useEffect(() => {
     if (user && params.id) {
-      const profileId = params.id as string;
+      const profileId = Array.isArray(params.id) ? params.id[0] : params.id;
       fetchProfile(profileId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,20 +71,20 @@ export default function ViewProfile() {
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/ams_creator_profiles?id=eq.${profileId}`,
         {
           headers: {
-            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            'Authorization': user && 'access_token' in user ? `Bearer ${(user as any).access_token}` : ''
-          }
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+            'Authorization': user && 'access_token' in user ? `Bearer ${(user as never as { access_token: string }).access_token}` : '',
+          },
         }
       );
 
       if (response.ok) {
-        const data = await response.json();
+        const data: UserProfile[] = await response.json();
         if (data.length > 0) {
           setProfile(data[0]);
         }
       }
-    } catch (error) {
-      // silent
+    } catch {
+      // silent fail
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +93,7 @@ export default function ViewProfile() {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl" style={{fontFamily: 'Rockwell, serif'}}>Loading...</div>
+        <div className="text-xl" style={{ fontFamily: 'Rockwell, serif' }}>Loading...</div>
       </div>
     );
   }
@@ -103,113 +101,73 @@ export default function ViewProfile() {
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-white" style={{fontFamily: 'Rockwell, serif'}}>Profile not found</div>
+        <div className="text-xl text-white" style={{ fontFamily: 'Rockwell, serif' }}>Profile not found</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen relative overflow-hidden flex">
+      {/* BG */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-700 via-indigo-800 to-purple-700 animate-shimmer" />
       </div>
+      {/* Animations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-32 animate-float opacity-40">
-          <Sparkle size={24} />
-        </div>
-        <div className="absolute top-1/2 left-80 animate-float opacity-35">
-          <Sparkle size={22} />
-        </div>
-        <div className="absolute bottom-40 right-96 animate-float-delayed opacity-40">
-          <Sparkle size={24} />
-        </div>
+        <div className="absolute top-20 left-32 animate-float opacity-40"><Sparkle size={24} /></div>
+        <div className="absolute top-1/2 left-80 animate-float opacity-35"><Sparkle size={22} /></div>
+        <div className="absolute bottom-40 right-96 animate-float-delayed opacity-40"><Sparkle size={24} /></div>
       </div>
+      {/* Sidebar */}
       <aside className="fixed left-0 top-0 w-64 h-full bg-white/10 backdrop-blur-md shadow-lg z-50 flex flex-col">
         <div className="p-6 flex flex-col h-full text-white">
-          <div className="mb-8" style={{height: '1.6cm'}}></div>
+          <div className="mb-8" style={{ height: '1.6cm' }}></div>
           <nav className="space-y-2 overflow-y-auto flex-1 pr-2">
-            <button 
-              onClick={() => router.push('/dashboard')}
+            <button onClick={() => router.push('/dashboard')}
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
-              style={{fontFamily: 'Rockwell, serif'}}
-            >
-              Dashboard
-            </button>
-            <button 
-              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed"
-              disabled
-              style={{fontFamily: 'Rockwell, serif'}}
-            >
-              Under Construction
-            </button>
+              style={{ fontFamily: 'Rockwell, serif' }}>Dashboard</button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed" disabled
+              style={{ fontFamily: 'Rockwell, serif' }}>Under Construction</button>
             {user && (
-              <button 
-                onClick={() => router.push('/profile')}
+              <button onClick={() => router.push('/profile')}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
-                style={{fontFamily: 'Rockwell, serif'}}
-              >
-                My Profile
-              </button>
+                style={{ fontFamily: 'Rockwell, serif' }}>My Profile</button>
             )}
-            <button 
-              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
-              style={{fontFamily: 'Rockwell, serif'}}
-            >
-              Docs
-            </button>
-            <button 
-              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
-              style={{fontFamily: 'Rockwell, serif'}}
-            >
-              Settings
-            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
+              style={{ fontFamily: 'Rockwell, serif' }}>Docs</button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
+              style={{ fontFamily: 'Rockwell, serif' }}>Settings</button>
           </nav>
           <div className="border-t border-white/20 pt-6 mt-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold" style={{fontFamily: 'Rockwell, serif'}}>
-                  {user?.email?.[0]?.toUpperCase() || 'U'}
-                </span>
+                <span className="text-white font-bold" style={{ fontFamily: 'Rockwell, serif' }}>{user?.email?.[0]?.toUpperCase() || 'U'}</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-white" style={{fontFamily: 'Rockwell, serif'}}>
-                  {user?.email}
-                </p>
+                <p className="text-sm font-medium text-white" style={{ fontFamily: 'Rockwell, serif' }}>{user?.email}</p>
               </div>
             </div>
-            <button 
-              onClick={logout}
+            <button onClick={logout}
               className="w-full bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all"
-              style={{fontFamily: 'Rockwell, serif'}}
-            >
-              Logout
-            </button>
+              style={{ fontFamily: 'Rockwell, serif' }}>Logout</button>
           </div>
         </div>
       </aside>
+      {/* Main content */}
       <div className="flex-1 ml-64 relative z-10">
         <header className="bg-white/10 backdrop-blur-md shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Sparkle size={40} />
-              <h1 className="text-4xl font-bold text-white" style={{fontFamily: 'Rockwell, serif', fontStyle: 'italic'}}>
-                AIMarketSpace
-              </h1>
+              <h1 className="text-4xl font-bold text-white" style={{ fontFamily: 'Rockwell, serif', fontStyle: 'italic' }}>AIMarketSpace</h1>
             </div>
-            <p className="text-white/90 mt-2" style={{fontFamily: 'Rockwell, serif'}}>
-              Find AI Solutions for Your Business
-            </p>
+            <p className="text-white/90 mt-2" style={{ fontFamily: 'Rockwell, serif' }}>Find AI Solutions for Your Business</p>
           </div>
         </header>
         <div className="bg-white/5 backdrop-blur-sm py-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <button
-              onClick={() => router.back()}
-              className="text-white/70 hover:text-white flex items-center gap-2 transition"
-              style={{fontFamily: 'Rockwell, serif'}}
-            >
-              ← Back
-            </button>
+            <button onClick={() => router.back()} className="text-white/70 hover:text-white flex items-center gap-2 transition"
+              style={{ fontFamily: 'Rockwell, serif' }}>← Back</button>
           </div>
         </div>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -217,94 +175,73 @@ export default function ViewProfile() {
             <div className="flex items-center gap-8 mb-8">
               <div className="relative">
                 {profile.avatar_url ? (
-                  <img 
-                    src={profile.avatar_url} 
-                    alt="Avatar" 
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white/30"
-                  />
+                  <img src={profile.avatar_url} alt="Avatar"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-white/30" />
                 ) : (
                   <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-4xl text-white font-bold" style={{fontFamily: 'Rockwell, serif'}}>
+                    <span className="text-4xl text-white font-bold" style={{ fontFamily: 'Rockwell, serif' }}>
                       {profile.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="text-3xl font-bold text-white" style={{fontFamily: 'Rockwell, serif'}}>
-                  {profile.full_name || 'Name not set'}
-                </h3>
-                <p className="text-xl text-white/80 mt-1" style={{fontFamily: 'Rockwell, serif'}}>
-                  {profile.title || 'Title not set'}
-                </p>
+                <h3 className="text-3xl font-bold text-white" style={{ fontFamily: 'Rockwell, serif' }}>{profile.full_name || 'Name not set'}</h3>
+                <p className="text-xl text-white/80 mt-1" style={{ fontFamily: 'Rockwell, serif' }}>{profile.title || 'Title not set'}</p>
               </div>
             </div>
             <div className="space-y-6">
               {profile.languages && profile.languages.length > 0 && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    Languages
-                  </label>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>Languages</label>
                   <ul className="list-disc list-inside text-white/90 space-y-1">
                     {profile.languages.map((lang, index) => (
-                      <li key={index} style={{fontFamily: 'Rockwell, serif'}}>{lang}</li>
+                      <li key={index} style={{ fontFamily: 'Rockwell, serif' }}>{lang}</li>
                     ))}
                   </ul>
                 </div>
               )}
               {profile.bio && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    About
-                  </label>
-                  <p className="text-white/90 leading-relaxed" style={{fontFamily: 'Rockwell, serif'}}>{profile.bio}</p>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>About</label>
+                  <p className="text-white/90 leading-relaxed" style={{ fontFamily: 'Rockwell, serif' }}>{profile.bio}</p>
                 </div>
               )}
               {profile.tools_skills && profile.tools_skills.length > 0 && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    Tools & Skills
-                  </label>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>Tools & Skills</label>
                   <ul className="list-disc list-inside text-white/90 space-y-1">
                     {profile.tools_skills.map((skill, index) => (
-                      <li key={index} style={{fontFamily: 'Rockwell, serif'}}>{skill}</li>
+                      <li key={index} style={{ fontFamily: 'Rockwell, serif' }}>{skill}</li>
                     ))}
                   </ul>
                 </div>
               )}
               {profile.solutions_for && profile.solutions_for.length > 0 && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    I build solutions for
-                  </label>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>I build solutions for</label>
                   <ul className="list-disc list-inside text-white/90 space-y-1">
                     {profile.solutions_for.map((solution, index) => (
-                      <li key={index} style={{fontFamily: 'Rockwell, serif'}}>{solution}</li>
+                      <li key={index} style={{ fontFamily: 'Rockwell, serif' }}>{solution}</li>
                     ))}
                   </ul>
                 </div>
               )}
               {profile.experience && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    Experience
-                  </label>
-                  <p className="text-white/90 whitespace-pre-wrap leading-relaxed" style={{fontFamily: 'Rockwell, serif'}}>{profile.experience}</p>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>Experience</label>
+                  <p className="text-white/90 whitespace-pre-wrap leading-relaxed" style={{ fontFamily: 'Rockwell, serif' }}>{profile.experience}</p>
                 </div>
               )}
               {profile.approximate_pricing && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    Approximate Pricing
-                  </label>
-                  <p className="text-white/90" style={{fontFamily: 'Rockwell, serif'}}>{profile.approximate_pricing}</p>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>Approximate Pricing</label>
+                  <p className="text-white/90" style={{ fontFamily: 'Rockwell, serif' }}>{profile.approximate_pricing}</p>
                 </div>
               )}
               {profile.video_url && extractVideoId(profile.video_url) && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{fontFamily: 'Rockwell, serif'}}>
-                    Video Showcase
-                  </label>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>Video Showcase</label>
                   {extractVideoId(profile.video_url)?.platform === 'youtube' ? (
                     <div className="mt-3 relative" style={{ maxWidth: '500px' }}>
                       <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
@@ -321,7 +258,7 @@ export default function ViewProfile() {
                     </div>
                   ) : (
                     <div className="mt-3" style={{ maxWidth: '500px' }}>
-                      <div 
+                      <div
                         className="relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer p-8 text-center"
                         onClick={() => window.open(profile.video_url, '_blank')}
                       >
@@ -338,30 +275,22 @@ export default function ViewProfile() {
               )}
               {profile.additional_info && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                    Additional Info
-                  </label>
+                  <label className="block text-lg font-semibold text-white mb-3 border-b border-white/20 pb-2" style={{ fontFamily: 'Rockwell, serif' }}>Additional Info</label>
                   <p className="text-white/90 whitespace-pre-wrap leading-relaxed" style={{ fontFamily: 'Rockwell, serif' }}>{profile.additional_info}</p>
                 </div>
               )}
               <div className="border-t border-white/20 pt-6">
-                <h3 className="text-lg font-bold text-white mb-4" style={{ fontFamily: 'Rockwell, serif' }}>
-                  Let&apos;s Connect:
-                </h3>
+                <h3 className="text-lg font-bold text-white mb-4" style={{ fontFamily: 'Rockwell, serif' }}>Let&apos;s Connect:</h3>
                 <div className="space-y-4">
                   {profile.contact_email && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                        Email:
-                      </label>
+                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Email:</label>
                       <p className="text-white" style={{ fontFamily: 'Rockwell, serif' }}>{profile.contact_email}</p>
                     </div>
                   )}
                   {profile.linkedin_url && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                        LinkedIn:
-                      </label>
+                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>LinkedIn:</label>
                       <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline" style={{ fontFamily: 'Rockwell, serif' }}>
                         {profile.linkedin_url}
                       </a>
@@ -369,9 +298,7 @@ export default function ViewProfile() {
                   )}
                   {profile.booking_url && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                        Book a Call:
-                      </label>
+                      <label className="block text-sm font-medium text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Book a Call:</label>
                       <a href={profile.booking_url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline" style={{ fontFamily: 'Rockwell, serif' }}>
                         {profile.booking_url}
                       </a>
@@ -383,7 +310,7 @@ export default function ViewProfile() {
           </div>
         </main>
       </div>
-            <style jsx>{`
+      <style jsx>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
