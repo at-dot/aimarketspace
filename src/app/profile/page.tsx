@@ -454,7 +454,7 @@ export default function Profile() {
                     <input
                       type="text"
                       value={formData.full_name}
-                      onChange={(e) => handleChange('full_name', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('full_name', e.target.value)}
                       className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                       style={{ fontFamily: 'Rockwell, serif' }}
                     />
@@ -464,7 +464,7 @@ export default function Profile() {
                     <input
                       type="text"
                       value={formData.title}
-                      onChange={(e) => handleChange('title', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('title', e.target.value)}
                       className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                       style={{ fontFamily: 'Rockwell, serif' }}
                     />
@@ -478,7 +478,7 @@ export default function Profile() {
                 {isEditing ? (
                   <textarea
                     value={formData.bio}
-                    onChange={(e) => handleChange('bio', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('bio', e.target.value)}
                     rows={4}
                     className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                     style={{ fontFamily: 'Rockwell, serif' }}
@@ -497,7 +497,7 @@ export default function Profile() {
                 {isEditing ? (
                   <textarea
                     value={formData.experience}
-                    onChange={(e) => handleChange('experience', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('experience', e.target.value)}
                     rows={4}
                     className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                     style={{ fontFamily: 'Rockwell, serif' }}
@@ -519,7 +519,7 @@ export default function Profile() {
                       <input
                         type="text"
                         value={newLanguage}
-                        onChange={(e) => setNewLanguage(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewLanguage(e.target.value)}
                         onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
@@ -584,7 +584,7 @@ export default function Profile() {
                       <input
                         type="text"
                         value={newSkill}
-                        onChange={(e) => setNewSkill(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSkill(e.target.value)}
                         onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
@@ -687,7 +687,7 @@ export default function Profile() {
                   <input
                     type="text"
                     value={formData.video_url}
-                    onChange={(e) => handleChange('video_url', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('video_url', e.target.value)}
                     className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                     style={{ fontFamily: 'Rockwell, serif' }}
                     placeholder="YouTube or Loom video URL..."
@@ -733,7 +733,7 @@ export default function Profile() {
                 {isEditing ? (
                   <textarea
                     value={formData.additional_info}
-                    onChange={(e) => handleChange('additional_info', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('additional_info', e.target.value)}
                     rows={4}
                     className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                     style={{ fontFamily: 'Rockwell, serif' }}
@@ -753,7 +753,7 @@ export default function Profile() {
                   <input
                     type="text"
                     value={formData.approximate_pricing}
-                    onChange={(e) => handleChange('approximate_pricing', e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('approximate_pricing', e.target.value)}
                     className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                     style={{ fontFamily: 'Rockwell, serif' }}
                     placeholder="e.g., $50-100/hour"
@@ -773,7 +773,7 @@ export default function Profile() {
                     <input
                       type="email"
                       value={formData.contact_email}
-                      onChange={(e) => handleChange('contact_email', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('contact_email', e.target.value)}
                       className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                       style={{ fontFamily: 'Rockwell, serif' }}
                     />
@@ -783,7 +783,7 @@ export default function Profile() {
                     <input
                       type="text"
                       value={formData.linkedin_url}
-                      onChange={(e) => handleChange('linkedin_url', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('linkedin_url', e.target.value)}
                       className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                       style={{ fontFamily: 'Rockwell, serif' }}
                     />
@@ -793,7 +793,7 @@ export default function Profile() {
                     <input
                       type="text"
                       value={formData.booking_url}
-                      onChange={(e) => handleChange('booking_url', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('booking_url', e.target.value)}
                       className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
                       style={{ fontFamily: 'Rockwell, serif' }}
                     />
