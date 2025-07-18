@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface UserProfile {
   id: string;
@@ -294,6 +295,14 @@ export default function Profile() {
     handleChange('languages', formData.languages.filter(l => l !== lang));
   };
 
+  const toggleSolution = (solution: string) => {
+    if (formData.solutions_for.includes(solution)) {
+      handleChange('solutions_for', formData.solutions_for.filter(s => s !== solution));
+    } else {
+      handleChange('solutions_for', [...formData.solutions_for, solution]);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -303,6 +312,8 @@ export default function Profile() {
   }
 
   if (!user) return null;
+
+  const videoInfo = formData.video_url ? extractVideoId(formData.video_url) : null;
 
   return (
     <div className="min-h-screen relative overflow-hidden flex">
@@ -395,11 +406,14 @@ export default function Profile() {
             <div className="flex items-center gap-8 mb-8">
               <div className="relative">
                 {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt="Avatar"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white/30"
-                  />
+                  <div className="relative w-32 h-32">
+                    <Image
+                      src={avatarPreview}
+                      alt="Avatar"
+                      fill
+                      className="rounded-full object-cover border-4 border-white/30"
+                    />
+                  </div>
                 ) : (
                   <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
                     <span className="text-4xl text-white font-bold" style={{ fontFamily: 'Rockwell, serif' }}>
@@ -430,10 +444,391 @@ export default function Profile() {
                 </div>
               )}
             </div>
+
             <div className="space-y-6">
-              {/* ...Sve ostale sekcije kao u tvom originalnom kodu */}
-              {/* DODAJ ceo JSX koji si koristila, ovde nema potrebe da menjaš ništa drugo! */}
+              {/* Basic Info Section */}
+              {isEditing && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Full Name</label>
+                    <input
+                      type="text"
+                      value={formData.full_name}
+                      onChange={(e) => handleChange('full_name', e.target.value)}
+                      className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Title</label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => handleChange('title', e.target.value)}
+                      className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Bio Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Bio</h4>
+                {isEditing ? (
+                  <textarea
+                    value={formData.bio}
+                    onChange={(e) => handleChange('bio', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                    style={{ fontFamily: 'Rockwell, serif' }}
+                    placeholder="Tell us about yourself..."
+                  />
+                ) : (
+                  <p className="text-white/80" style={{ fontFamily: 'Rockwell, serif' }}>
+                    {formData.bio || 'No bio provided yet.'}
+                  </p>
+                )}
+              </div>
+
+              {/* Experience Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Experience</h4>
+                {isEditing ? (
+                  <textarea
+                    value={formData.experience}
+                    onChange={(e) => handleChange('experience', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                    style={{ fontFamily: 'Rockwell, serif' }}
+                    placeholder="Describe your experience..."
+                  />
+                ) : (
+                  <p className="text-white/80" style={{ fontFamily: 'Rockwell, serif' }}>
+                    {formData.experience || 'No experience details provided yet.'}
+                  </p>
+                )}
+              </div>
+
+              {/* Languages Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Languages</h4>
+                {isEditing ? (
+                  <div>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={newLanguage}
+                        onChange={(e) => setNewLanguage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
+                        className="flex-1 px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                        placeholder="Add a language..."
+                      />
+                      <button
+                        onClick={addLanguage}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.languages.map((lang) => (
+                        <span
+                          key={lang}
+                          className="bg-white/20 text-white px-3 py-1 rounded-full flex items-center gap-2"
+                          style={{ fontFamily: 'Rockwell, serif' }}
+                        >
+                          {lang}
+                          <button
+                            onClick={() => removeLanguage(lang)}
+                            className="hover:text-red-300"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.languages.length > 0 ? (
+                      formData.languages.map((lang) => (
+                        <span
+                          key={lang}
+                          className="bg-white/20 text-white px-3 py-1 rounded-full"
+                          style={{ fontFamily: 'Rockwell, serif' }}
+                        >
+                          {lang}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-white/60" style={{ fontFamily: 'Rockwell, serif' }}>No languages added yet.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Tools & Skills Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Tools & Skills</h4>
+                {isEditing ? (
+                  <div>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                        className="flex-1 px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                        placeholder="Add a skill..."
+                      />
+                      <button
+                        onClick={addSkill}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tools_skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="bg-white/20 text-white px-3 py-1 rounded-full flex items-center gap-2"
+                          style={{ fontFamily: 'Rockwell, serif' }}
+                        >
+                          {skill}
+                          <button
+                            onClick={() => removeSkill(skill)}
+                            className="hover:text-red-300"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tools_skills.length > 0 ? (
+                      formData.tools_skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="bg-white/20 text-white px-3 py-1 rounded-full"
+                          style={{ fontFamily: 'Rockwell, serif' }}
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-white/60" style={{ fontFamily: 'Rockwell, serif' }}>No skills added yet.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Solutions For Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Solutions For</h4>
+                {isEditing ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {solutionCategories.map((solution) => (
+                      <label
+                        key={solution}
+                        className="flex items-center gap-2 text-white/80 cursor-pointer hover:text-white"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.solutions_for.includes(solution)}
+                          onChange={() => toggleSolution(solution)}
+                          className="w-4 h-4"
+                        />
+                        {solution}
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.solutions_for.length > 0 ? (
+                      formData.solutions_for.map((solution) => (
+                        <span
+                          key={solution}
+                          className="bg-white/20 text-white px-3 py-1 rounded-full"
+                          style={{ fontFamily: 'Rockwell, serif' }}
+                        >
+                          {solution}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-white/60" style={{ fontFamily: 'Rockwell, serif' }}>No solutions selected yet.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Video URL Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Video Presentation</h4>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={formData.video_url}
+                    onChange={(e) => handleChange('video_url', e.target.value)}
+                    className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                    style={{ fontFamily: 'Rockwell, serif' }}
+                    placeholder="YouTube or Loom video URL..."
+                  />
+                ) : formData.video_url ? (
+                  <div>
+                    <a
+                      href={formData.video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition mb-4"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    >
+                      Open Video in New Tab
+                    </a>
+                    {videoInfo && (
+                      <div className="aspect-video bg-black/20 rounded-lg overflow-hidden">
+                        {videoInfo.platform === 'youtube' ? (
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoInfo.id}`}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <iframe
+                            src={`https://www.loom.com/embed/${videoInfo.id}`}
+                            className="w-full h-full"
+                            allowFullScreen
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-white/60" style={{ fontFamily: 'Rockwell, serif' }}>No video added yet.</p>
+                )}
+              </div>
+
+              {/* Additional Info Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Additional Information</h4>
+                {isEditing ? (
+                  <textarea
+                    value={formData.additional_info}
+                    onChange={(e) => handleChange('additional_info', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                    style={{ fontFamily: 'Rockwell, serif' }}
+                    placeholder="Any additional information you'd like to share..."
+                  />
+                ) : (
+                  <p className="text-white/80" style={{ fontFamily: 'Rockwell, serif' }}>
+                    {formData.additional_info || 'No additional information provided yet.'}
+                  </p>
+                )}
+              </div>
+
+              {/* Pricing Section */}
+              <div>
+                <h4 className="text-white font-bold mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Approximate Pricing</h4>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={formData.approximate_pricing}
+                    onChange={(e) => handleChange('approximate_pricing', e.target.value)}
+                    className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                    style={{ fontFamily: 'Rockwell, serif' }}
+                    placeholder="e.g., $50-100/hour"
+                  />
+                ) : (
+                  <p className="text-white/80" style={{ fontFamily: 'Rockwell, serif' }}>
+                    {formData.approximate_pricing || 'No pricing information provided yet.'}
+                  </p>
+                )}
+              </div>
+
+              {/* Contact Info Section */}
+              {isEditing && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Contact Email</label>
+                    <input
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => handleChange('contact_email', e.target.value)}
+                      className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>LinkedIn URL</label>
+                    <input
+                      type="text"
+                      value={formData.linkedin_url}
+                      onChange={(e) => handleChange('linkedin_url', e.target.value)}
+                      className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white/80 mb-2" style={{ fontFamily: 'Rockwell, serif' }}>Booking URL</label>
+                    <input
+                      type="text"
+                      value={formData.booking_url}
+                      onChange={(e) => handleChange('booking_url', e.target.value)}
+                      className="w-full px-4 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:bg-white/30"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Contact buttons in view mode */}
+              {!isEditing && (formData.contact_email || formData.linkedin_url || formData.booking_url) && (
+                <div className="flex flex-wrap gap-4">
+                  {formData.contact_email && (
+                    <a
+                      href={`mailto:${formData.contact_email}`}
+                      className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    >
+                      Email Me
+                    </a>
+                  )}
+                  {formData.linkedin_url && (
+                    <a
+                      href={formData.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    >
+                      LinkedIn
+                    </a>
+                  )}
+                  {formData.booking_url && (
+                    <a
+                      href={formData.booking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                    >
+                      Book a Call
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
+
             {/* Action Buttons */}
             {isEditing && (
               <div className="flex gap-4 pt-6">
