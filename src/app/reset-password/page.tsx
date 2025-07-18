@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function ResetPasswordInner() {
+export default function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -14,8 +14,11 @@ function ResetPasswordInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Čitamo token iz URL query parametra
     const urlToken = searchParams.get('token');
-    if (urlToken) setToken(urlToken);
+    if (urlToken) {
+      setToken(urlToken);
+    }
     setIsLoading(false);
   }, [searchParams]);
 
@@ -39,8 +42,13 @@ function ResetPasswordInner() {
     try {
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: token,
+          password: password
+        })
       });
 
       const data = await response.json();
@@ -51,7 +59,7 @@ function ResetPasswordInner() {
       } else {
         setError(data.error || 'Failed to reset password. Please try again.');
       }
-    } catch (err) {
+    } catch (error) {
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -60,8 +68,9 @@ function ResetPasswordInner() {
 
   const Sparkle = ({ size = 24 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
-      <path d="M12 0 C13 6, 16 9, 22 10 C16 11, 13 14, 12 20 C11 14, 8 11, 2 10 C8 9, 11 6, 12 0 Z" 
-            fill="white" stroke="none"/>
+      <path d="M12 0 C13 6, 16 9, 22 10 C16 11, 13 14, 12 20 C11 14, 8 11, 2 10 C8 9, 11 6, 12 0 Z"
+            fill="white"
+            stroke="none"/>
     </svg>
   );
 
@@ -70,6 +79,7 @@ function ResetPasswordInner() {
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-700 via-indigo-800 to-purple-700 animate-shimmer" />
       </div>
+
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-block mb-4">
@@ -79,6 +89,7 @@ function ResetPasswordInner() {
             Reset Your Password
           </h1>
         </div>
+
         <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8">
           {isLoading ? (
             <div className="text-white text-center">Verifying reset link...</div>
@@ -100,6 +111,7 @@ function ResetPasswordInner() {
                   minLength={6}
                 />
               </div>
+
               <div>
                 <input
                   type="password"
@@ -112,6 +124,7 @@ function ResetPasswordInner() {
                   minLength={6}
                 />
               </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -122,16 +135,19 @@ function ResetPasswordInner() {
               </button>
             </form>
           )}
+
           {message && (
             <div className="mt-6 p-4 bg-green-500/20 border border-green-400/50 rounded-lg text-white text-sm text-center">
               {message}
             </div>
           )}
+
           {error && token && (
             <div className="mt-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg text-white text-sm text-center">
               {error}
             </div>
           )}
+
           <div className="text-center mt-8">
             <button
               onClick={() => router.push('/')}
@@ -143,24 +159,18 @@ function ResetPasswordInner() {
           </div>
         </div>
       </div>
+
       <style jsx>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
+
         .animate-shimmer {
           background-size: 200% 100%;
           animation: shimmer 8s linear infinite;
         }
       `}</style>
     </div>
-  );
-}
-
-export default function ResetPassword() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ResetPasswordInner />
-    </Suspense>
   );
 }
