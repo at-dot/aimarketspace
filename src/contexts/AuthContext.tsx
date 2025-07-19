@@ -13,6 +13,7 @@ interface User {
   id: string;
   email: string;
   user_type?: 'creator' | 'business';
+  access_token?: string;
 }
 
 interface AuthContextType {
@@ -39,7 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData: User = {
           id: session.user.id,
           email: session.user.email!,
-          user_type: session.user.user_metadata?.user_type
+          user_type: session.user.user_metadata?.user_type,
+          access_token: session.access_token
         };
         setUser(userData);
         
@@ -48,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { data: profile } = await supabase
             .from('ams_creator_profiles')
             .select('*')
-            .eq('user_id', userData.id)
+            .eq('id', userData.id)
             .single();
           
           // Ako nema profil, redirect na create profile
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { data: profile } = await supabase
             .from('ams_business_profiles')
             .select('*')
-            .eq('user_id', userData.id)
+            .eq('id', userData.id)
             .single();
           
           if (!profile) {
@@ -84,7 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData: User = {
           id: session.user.id,
           email: session.user.email!,
-          user_type: session.user.user_metadata?.user_type
+          user_type: session.user.user_metadata?.user_type,
+          access_token: session.access_token
         };
         setUser(userData);
       }
@@ -103,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: { 
             user_type: userType 
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       });
 
