@@ -147,7 +147,7 @@ export default function Profile() {
       const { data, error } = await supabase
         .from('ams_creator_profiles')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('id', user?.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -251,7 +251,7 @@ export default function Profile() {
       }
 
       const profileData = {
-        user_id: user?.id,
+        id: user?.id,
         username: formData.username,
         full_name: formData.full_name,
         title: formData.title,
@@ -275,7 +275,7 @@ export default function Profile() {
         const { error } = await supabase
           .from('ams_creator_profiles')
           .update(profileData)
-          .eq('user_id', user?.id);
+          .eq('id', user?.id);
 
         if (error) {
           console.error('Update error:', error);
