@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -19,8 +19,8 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Uzimamo token iz URL-a
-  const token = searchParams.get('token');
+  // Ako ti treba token iz URL-a (npr. /reset-password?token=...), koristi ovako:
+  // const token = searchParams.get('token');
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,14 +35,9 @@ export default function ResetPasswordPage() {
       setError('Password must be at least 6 characters.');
       return;
     }
-    if (!token) {
-      setError('Invalid or expired reset link.');
-      return;
-    }
 
     setLoading(true);
 
-    // Poziv Supabase SDK - update user password preko tokena
     const { error } = await supabase.auth.updateUser({
       password: password,
     });
