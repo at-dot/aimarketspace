@@ -3,15 +3,46 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 
 export default function AuthCallback() {
   const router = useRouter();
 
   useEffect(() => {
-    // Uvek idi na dashboard
-    // AuthContext će se pobrinuti za session
-    const timer = setTimeout(() => {
+    async function handleRedirect() {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      // Sačekaj da se sesija učita
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const userType = session.user.user_metadata?.user_type;
+        
+        // Ako je biznis korisnik, proveri verifikaciju
+        if (userType === 'business') {
+          const { data: businessProfile } = await supabase
+            .from('ams_business_profiles')
+            .select('verification_status')
+            .eq('user_id', session.user.id)
+            .single();
+          
+          // Ako nema profil ili nije verified, idi na business-verification
+          if (!businessProfile || businessProfile.verification_status !== 'verified') {
+            router.push('/business-verification');
+            return;
+          }
+        }
+      }
+      
+      // Za sve ostale slučajeve (creator ili verified business), idi na dashboard
       router.push('/dashboard');
+    }
+
+    const timer = setTimeout(() => {
+      handleRedirect();
     }, 1000);
 
     return () => clearTimeout(timer);
