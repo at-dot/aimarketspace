@@ -8,8 +8,8 @@ export default function AuthCallback() {
   const router = useRouter();
 
   useEffect(() => {
-    // Supabase će automatski handle-ovati auth preko onAuthStateChange
-    // Samo redirect na dashboard
+    // Uvek idi na dashboard
+    // AuthContext će se pobrinuti za session
     const timer = setTimeout(() => {
       router.push('/dashboard');
     }, 1000);
