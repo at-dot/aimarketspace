@@ -1,58 +1,48 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [creatorEmail, setCreatorEmail] = useState('');
-  const [creatorPassword, setCreatorPassword] = useState('');
   const [businessEmail, setBusinessEmail] = useState('');
-  const [businessPassword, setBusinessPassword] = useState('');
-
   const [creatorLoading, setCreatorLoading] = useState(false);
   const [businessLoading, setBusinessLoading] = useState(false);
+  const [creatorSuccess, setCreatorSuccess] = useState(false);
+  const [businessSuccess, setBusinessSuccess] = useState(false);
   const [error, setError] = useState('');
-
-  const { login } = useAuth();
+  
+  const { sendMagicLink } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const type = hashParams.get('type');
-
-      if (type === 'recovery') {
-        router.push(`/reset-password${window.location.hash}`);
-      }
-    }
-  }, [router]);
-
-  const handleCreatorLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreatorMagicLink = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setCreatorLoading(true);
     setError('');
+    
+    const result = await sendMagicLink(creatorEmail, 'creator');
 
-    const success = await login(creatorEmail, creatorPassword);
-
-    if (success) {
-      router.push('/dashboard');
+    if (!result.success) {
+      setError(result.error || 'Failed to send magic link');
+      setCreatorLoading(false);
     } else {
-      setError('Invalid email or password');
+      setCreatorSuccess(true);
       setCreatorLoading(false);
     }
   };
 
-  const handleBusinessLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleBusinessMagicLink = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setBusinessLoading(true);
     setError('');
+    
+    const result = await sendMagicLink(businessEmail, 'business');
 
-    const success = await login(businessEmail, businessPassword);
-
-    if (success) {
-      router.push('/dashboard');
+    if (!result.success) {
+      setError(result.error || 'Failed to send magic link');
+      setBusinessLoading(false);
     } else {
-      setError('Invalid email or password');
+      setBusinessSuccess(true);
       setBusinessLoading(false);
     }
   };
@@ -125,40 +115,48 @@ export default function Home() {
                 AI Creators
               </h2>
 
-              <form onSubmit={handleCreatorLogin} className="space-y-4">
-                <div>
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={creatorEmail}
-                    onChange={(e) => setCreatorEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
-                    style={{ fontFamily: 'Rockwell, serif' }}
-                    required
-                  />
-                </div>
+              {!creatorSuccess ? (
+                <form onSubmit={handleCreatorMagicLink} className="space-y-4">
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={creatorEmail}
+                      onChange={(e) => setCreatorEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={creatorPassword}
-                    onChange={(e) => setCreatorPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
+                  <button
+                    type="submit"
+                    disabled={creatorLoading}
+                    className="w-full bg-white text-purple-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ fontFamily: 'Rockwell, serif' }}
-                    required
-                  />
-                </div>
+                  >
+                    {creatorLoading ? 'Sending magic link...' : 'Get Magic Link'}
+                  </button>
 
-                <button
-                  type="submit"
-                  disabled={creatorLoading}
-                  className="w-full bg-white text-purple-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: 'Rockwell, serif' }}
-                >
-                  {creatorLoading ? 'Logging in...' : 'Log In'}
-                </button>
-              </form>
+                  <p className="text-white/70 text-sm text-center">
+                    We&apos;ll send you a login link - no password needed!
+                  </p>
+                </form>
+              ) : (
+                <div className="text-center space-y-4">
+                  <div className="text-green-300 text-lg">✓ Magic link sent!</div>
+                  <p className="text-white/80">Check your email and click the link to log in.</p>
+                  <button
+                    onClick={() => {
+                      setCreatorSuccess(false);
+                      setCreatorEmail('');
+                    }}
+                    className="text-white/70 hover:text-white text-sm underline"
+                  >
+                    Send another link
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Vertical divider */}
@@ -170,40 +168,48 @@ export default function Home() {
                 Business Owners
               </h2>
 
-              <form onSubmit={handleBusinessLogin} className="space-y-4">
-                <div>
-                  <input
-                    type="email"
-                    placeholder="Company Email"
-                    value={businessEmail}
-                    onChange={(e) => setBusinessEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
-                    style={{ fontFamily: 'Rockwell, serif' }}
-                    required
-                  />
-                </div>
+              {!businessSuccess ? (
+                <form onSubmit={handleBusinessMagicLink} className="space-y-4">
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Enter company email"
+                      value={businessEmail}
+                      onChange={(e) => setBusinessEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
+                      style={{ fontFamily: 'Rockwell, serif' }}
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={businessPassword}
-                    onChange={(e) => setBusinessPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
+                  <button
+                    type="submit"
+                    disabled={businessLoading}
+                    className="w-full bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ fontFamily: 'Rockwell, serif' }}
-                    required
-                  />
-                </div>
+                  >
+                    {businessLoading ? 'Sending magic link...' : 'Get Magic Link'}
+                  </button>
 
-                <button
-                  type="submit"
-                  disabled={businessLoading}
-                  className="w-full bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: 'Rockwell, serif' }}
-                >
-                  {businessLoading ? 'Logging in...' : 'Log In'}
-                </button>
-              </form>
+                  <p className="text-white/70 text-sm text-center">
+                    We&apos;ll send you a login link - no password needed!
+                  </p>
+                </form>
+              ) : (
+                <div className="text-center space-y-4">
+                  <div className="text-green-300 text-lg">✓ Magic link sent!</div>
+                  <p className="text-white/80">Check your company email and click the link to log in.</p>
+                  <button
+                    onClick={() => {
+                      setBusinessSuccess(false);
+                      setBusinessEmail('');
+                    }}
+                    className="text-white/70 hover:text-white text-sm underline"
+                  >
+                    Send another link
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -214,21 +220,14 @@ export default function Home() {
             </div>
           )}
 
-          {/* Forgot password */}
-          <div className="text-center mt-8">
-            <a href="/forgot-password" className="text-white/80 hover:text-white text-sm transition-colors" style={{ fontFamily: 'Rockwell, serif' }}>
-              Forgot password?
-            </a>
-          </div>
-
           {/* Sign up section */}
           <div className="border-t border-white/20 mt-8 pt-8">
             <div className="text-center">
               <span className="text-white/80 text-sm" style={{ fontFamily: 'Rockwell, serif' }}>
-                Don&#39;t have an account?
+                First time here?
               </span>
               <a href="/signup" className="text-white font-bold text-sm hover:underline ml-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                Sign up
+                Create account
               </a>
             </div>
           </div>
