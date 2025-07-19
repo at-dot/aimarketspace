@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 
 interface UserProfile {
   id: string;
@@ -51,6 +52,31 @@ export default function ViewProfile() {
     return null;
   }
 
+  const fetchProfile = useCallback(async (profileId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/ams_creator_profiles?id=eq.${profileId}`,
+        {
+          headers: {
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+            'Authorization': user && 'access_token' in user ? `Bearer ${(user as any).access_token}` : '',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const profileData: UserProfile[] = await response.json();
+        if (profileData.length > 0) {
+          setProfile(profileData[0]);
+        }
+      }
+    } catch {
+      // silent fail
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/');
@@ -62,33 +88,7 @@ export default function ViewProfile() {
       const profileId = Array.isArray(params.id) ? params.id[0] : params.id;
       fetchProfile(profileId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, params.id]);
-
-  const fetchProfile = async (profileId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/ams_creator_profiles?id=eq.${profileId}`,
-        {
-          headers: {
-            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-            'Authorization': user && 'access_token' in user ? `Bearer ${(user as never as { access_token: string }).access_token}` : '',
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data: UserProfile[] = await response.json();
-        if (data.length > 0) {
-          setProfile(data[0]);
-        }
-      }
-    } catch {
-      // silent fail
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [user, params.id, fetchProfile]);
 
   if (loading || isLoading) {
     return (
@@ -175,8 +175,15 @@ export default function ViewProfile() {
             <div className="flex items-center gap-8 mb-8">
               <div className="relative">
                 {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Avatar"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white/30" />
+                  <div className="relative w-32 h-32">
+                    <Image 
+                      src={profile.avatar_url} 
+                      alt="Avatar"
+                      fill
+                      className="rounded-full object-cover border-4 border-white/30"
+                      sizes="128px"
+                    />
+                  </div>
                 ) : (
                   <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
                     <span className="text-4xl text-white font-bold" style={{ fontFamily: 'Rockwell, serif' }}>
