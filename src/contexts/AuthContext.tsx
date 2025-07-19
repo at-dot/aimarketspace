@@ -45,29 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setUser(userData);
         
-        // Proveri da li korisnik ima profil
-        if (userData.user_type === 'creator') {
-          const { data: profile } = await supabase
-            .from('ams_creator_profiles')
-            .select('*')
-            .eq('id', userData.id)
-            .single();
-          
-          // Ako nema profil, redirect na create profile
-          if (!profile) {
-            router.push('/onboarding/creator');
-          }
-        } else if (userData.user_type === 'business') {
-          const { data: profile } = await supabase
-            .from('ams_business_profiles')
-            .select('*')
-            .eq('id', userData.id)
-            .single();
-          
-          if (!profile) {
-            router.push('/onboarding/business');
-          }
-        }
+        // Ne radimo nikakav automatski redirect na onboarding
+        // Korisnik će sam otići na My Profile kada bude spreman
+        
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
