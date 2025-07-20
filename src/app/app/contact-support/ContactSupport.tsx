@@ -15,8 +15,29 @@ export default function ContactSupport() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Formspree se automatski handle-uje kroz action attribute
-    // Ali možemo dodati dodatnu logiku ako treba
+    try {
+      const response = await fetch('https://formspree.io/f/manbqogb', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          message: formData.message,
+          _subject: 'AIMarketSpace Support Request'
+        }),
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        alert('Something went wrong. Please try again.');
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      alert('Something went wrong. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   // Sparkle component
@@ -89,15 +110,7 @@ export default function ContactSupport() {
             We are here to help
           </p>
 
-          <form 
-            action="https://formspree.io/f/manbqogb"
-            method="POST"
-            onSubmit={(e) => {
-              setIsSubmitted(true);
-              // Formspree će automatski poslati formu
-            }}
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
                 Your Email <span className="text-red-300">*</span>
@@ -128,9 +141,6 @@ export default function ContactSupport() {
                 required
               />
             </div>
-
-            {/* Hidden field za tip problema */}
-            <input type="hidden" name="_subject" value="AIMarketSpace Support Request" />
             
             {/* Back button i Submit button */}
             <div className="flex gap-4">
