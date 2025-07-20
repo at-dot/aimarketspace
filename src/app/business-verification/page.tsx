@@ -104,7 +104,7 @@ export default function BusinessVerification() {
         throw result.error;
       }
 
-      // Trigger N8N webhook - try production first, then test
+      // Trigger N8N webhooks - send to BOTH URLs
       const webhookData = {
         email: user?.email,
         website: formData.company_website,
@@ -112,31 +112,24 @@ export default function BusinessVerification() {
         userId: user?.id
       };
 
-      try {
-        // First try production webhook
-        const prodResponse = await fetch('https://stembot.app.n8n.cloud/webhook/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
+      // Send to both webhooks in parallel
+      const webhookPromises = [
+        fetch('https://stembot.app.n8n.cloud/webhook/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(webhookData)
-        });
+        }).catch(err => console.error('Production webhook error:', err)),
+        
+        fetch('https://stembot.app.n8n.cloud/webhook-test/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(webhookData)
+        }).catch(err => console.error('Test webhook error:', err))
+      ];
 
-        if (!prodResponse.ok) {
-          console.log('Production webhook failed, trying test...');
-          // If production fails, try test webhook
-          const testResponse = await fetch('https://stembot.app.n8n.cloud/webhook-test/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(webhookData)
-          });
-
-          if (!testResponse.ok) {
-            console.error('Both webhooks failed');
-          }
-        }
-      } catch (webhookError) {
-        console.error('Webhook error:', webhookError);
-        // Don't block the profile creation if webhook fails
-      }
+      // Wait for both to complete (or fail)
+      await Promise.allSettled(webhookPromises);
+      console.log('Webhooks sent to both URLs');
 
       setBusinessProfile(result.data);
       

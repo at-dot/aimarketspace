@@ -2,11 +2,18 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Dashboard() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
   const [userType, setUserType] = useState<'creator' | 'business' | null>(null);
+  const [hasAnyPublishedPosts, setHasAnyPublishedPosts] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -14,29 +21,51 @@ export default function Dashboard() {
     }
   }, [user, loading, router]);
 
-  // Determine user type based on user metadata or email domain
+  // Determine user type based on verified business profile or metadata
   useEffect(() => {
-    if (user) {
-      // Check if user has metadata for user type
-      const metadata = (user as { user_metadata?: { user_type?: string } }).user_metadata;
-      if (metadata?.user_type === 'creator' || metadata?.user_type === 'business') {
-        setUserType(metadata.user_type);
-      } else {
-        // Default logic: if email is corporate domain, assume business
-        const emailDomain = user.email?.split('@')[1];
-        if (
-          emailDomain &&
-          !emailDomain.includes('gmail') &&
-          !emailDomain.includes('yahoo') &&
-          !emailDomain.includes('hotmail')
-        ) {
+    const checkUserType = async () => {
+      if (user) {
+        // First check if user has a verified business profile
+        const { data: businessProfile } = await supabase
+          .from('ams_business_profiles')
+          .select('verification_status')
+          .eq('user_id', user.id)
+          .single();
+
+        if (businessProfile?.verification_status === 'verified') {
           setUserType('business');
+          return;
+        }
+
+        // If not verified business, check metadata
+        const metadata = (user as { user_metadata?: { user_type?: string } }).user_metadata;
+        if (metadata?.user_type === 'creator' || metadata?.user_type === 'business') {
+          setUserType(metadata.user_type);
         } else {
+          // Default to creator
           setUserType('creator');
         }
       }
-    }
+    };
+
+    checkUserType();
   }, [user]);
+
+  // Check if ANY business posts exist (not just current user's)
+  useEffect(() => {
+    const checkAnyPublishedPosts = async () => {
+      const { data } = await supabase
+        .from('business_posts')
+        .select('id')
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .limit(1);
+      
+     setHasAnyPublishedPosts(data ? data.length > 0 : false);
+    };
+    
+    checkAnyPublishedPosts();
+  }, []);
 
   // Sparkle component - same as login page
   const Sparkle = ({ size = 24 }: { size?: number }) => (
@@ -149,14 +178,17 @@ export default function Dashboard() {
               Dashboard
             </button>
             <button
-              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed"
-              disabled
+              onClick={() => hasAnyPublishedPosts ? router.push('/projects') : undefined}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 ${
+                !hasAnyPublishedPosts ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={!hasAnyPublishedPosts}
               style={{ fontFamily: 'Rockwell, serif' }}
             >
-              Under Construction
+              {hasAnyPublishedPosts ? 'Projects' : 'Under Construction'}
             </button>
             <button
-              onClick={() => router.push('/profile')}
+              onClick={() => router.push(userType === 'business' ? '/my-posts' : '/profile')}
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{ fontFamily: 'Rockwell, serif' }}
             >
@@ -269,17 +301,17 @@ export default function Dashboard() {
           {userType === 'business' && (
             <div className="mt-12 bg-white/10 backdrop-blur-md rounded-xl p-8 text-center">
               <h3 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'Rockwell, serif' }}>
-                Need a Custom Solution?
+                Have a Custom Project in Mind?
               </h3>
               <p className="text-white/90 mb-6" style={{ fontFamily: 'Rockwell, serif' }}>
-                Our experts can build custom automation tailored to your unique requirements.
+                Tell us how you see automation fitting into your business!
               </p>
               <button
-                onClick={() => router.push('/post-job')}
+                onClick={() => router.push('/my-posts')}
                 className="bg-white text-purple-600 px-8 py-3 rounded-lg hover:bg-white/90 transition-colors font-bold transform hover:scale-[1.02]"
                 style={{ fontFamily: 'Rockwell, serif' }}
               >
-                Post a Job
+                Create Post
               </button>
             </div>
           )}
