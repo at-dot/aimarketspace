@@ -64,16 +64,9 @@ export default function ContactSupport() {
             <h1 className="text-3xl text-white font-bold mb-4" style={{ fontFamily: 'Rockwell, serif' }}>
               Thank you for reaching out!
             </h1>
-            <p className="text-white/80 text-lg mb-8" style={{ fontFamily: 'Rockwell, serif' }}>
-              We'll get back to you within 5 business days
+            <p className="text-white/80 text-lg" style={{ fontFamily: 'Rockwell, serif' }}>
+              We typically respond within 5 business days
             </p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="bg-white text-blue-600 py-2 px-6 rounded-lg font-bold hover:bg-white/90"
-              style={{ fontFamily: 'Rockwell, serif' }}
-            >
-              Return to Dashboard
-            </button>
           </div>
         </div>
       </div>
@@ -137,7 +130,7 @@ export default function ContactSupport() {
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 min-h-[150px] resize-y"
                 style={{ fontFamily: 'Rockwell, serif' }}
-                placeholder="Please describe your issue..."
+                placeholder="I need help with (please provide details)..."
                 required
               />
             </div>
