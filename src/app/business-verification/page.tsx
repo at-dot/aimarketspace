@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import Link from 'next/link';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -70,13 +71,14 @@ export default function BusinessVerification() {
         return;
       }
 
-      // Create or update business profile
+      // Create or update business profile with attempt count
       const profileData = {
         user_id: user?.id,
         company_email: user?.email,
         company_website: formData.company_website,
         linkedin_url: formData.linkedin_url || null,
         verification_status: 'pending',
+        attempt_count: (businessProfile?.attempt_count || 0) + 1,
         updated_at: new Date().toISOString()
       };
 
@@ -102,7 +104,7 @@ export default function BusinessVerification() {
         throw result.error;
       }
 
-      // Trigger N8N webhook - try test URL first, then production
+      // Trigger N8N webhook - try production first, then test
       const webhookData = {
         email: user?.email,
         website: formData.company_website,
@@ -111,23 +113,23 @@ export default function BusinessVerification() {
       };
 
       try {
-        // First try test webhook
-        const testResponse = await fetch('https://stembot.app.n8n.cloud/webhook-test/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
+        // First try production webhook
+        const prodResponse = await fetch('https://stembot.app.n8n.cloud/webhook/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(webhookData)
         });
 
-        if (!testResponse.ok) {
-          console.log('Test webhook failed, trying production...');
-          // If test fails, try production webhook
-          const prodResponse = await fetch('https://stembot.app.n8n.cloud/webhook/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
+        if (!prodResponse.ok) {
+          console.log('Production webhook failed, trying test...');
+          // If production fails, try test webhook
+          const testResponse = await fetch('https://stembot.app.n8n.cloud/webhook-test/828b57a6-71c3-49ba-8622-83c8d7b14b91', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(webhookData)
           });
 
-          if (!prodResponse.ok) {
+          if (!testResponse.ok) {
             console.error('Both webhooks failed');
           }
         }
@@ -162,6 +164,10 @@ export default function BusinessVerification() {
         stroke="none" />
     </svg>
   );
+
+  // Check if user has reached max attempts
+  const hasReachedMaxAttempts = businessProfile?.verification_status === 'rejected' && 
+                                businessProfile?.attempt_count >= 3;
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
@@ -209,20 +215,49 @@ export default function BusinessVerification() {
                 Refresh Status
               </button>
             </div>
-          ) : businessProfile?.verification_status === 'rejected' ? (
+          ) : businessProfile?.verification_status === 'rejected' && hasReachedMaxAttempts ? (
+            // Max attempts reached - only show contact support
             <div className="text-center py-8">
               <div className="text-red-300 text-6xl mb-4">❌</div>
-              <h2 className="text-2xl text-white mb-4">Verification Failed</h2>
+              <h2 className="text-2xl text-white mb-4">Maximum attempts reached</h2>
               <p className="text-white/80 mb-6">
-                We couldn't verify your business information. Please check your details and try again.
+                Please contact support for assistance.
               </p>
-              <button
-                onClick={() => setBusinessProfile(null)}
-                className="bg-white text-blue-600 py-2 px-6 rounded-lg font-bold hover:bg-white/90"
+              <Link 
+                href="/contact-support"
+                className="inline-block bg-white text-blue-600 py-2 px-6 rounded-lg font-bold hover:bg-white/90"
                 style={{ fontFamily: 'Rockwell, serif' }}
               >
-                Try Again
-              </button>
+                Contact Support
+              </Link>
+            </div>
+          ) : businessProfile?.verification_status === 'rejected' ? (
+            // Rejected but can try again
+            <div className="text-center py-8">
+              <div className="text-red-300 text-6xl mb-4">❌</div>
+              <h2 className="text-2xl text-white mb-4">We couldn't verify your business information</h2>
+              <p className="text-white/80 mb-6">
+                Please check your details and try again, or contact support for assistance.
+              </p>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setBusinessProfile(null)}
+                  className="bg-white text-blue-600 py-2 px-6 rounded-lg font-bold hover:bg-white/90"
+                  style={{ fontFamily: 'Rockwell, serif' }}
+                >
+                  Try Again
+                </button>
+                <Link 
+                  href="/contact-support"
+                  className="bg-white/20 text-white py-2 px-6 rounded-lg font-bold hover:bg-white/30"
+                  style={{ fontFamily: 'Rockwell, serif' }}
+                >
+                  Contact Support
+                </Link>
+              </div>
+              <p className="text-white/50 text-sm mt-4">
+                Attempts used: {businessProfile.attempt_count}/3
+              </p>
             </div>
           ) : (
             <>
@@ -231,6 +266,13 @@ export default function BusinessVerification() {
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Show warning for last attempt */}
+                {businessProfile?.attempt_count === 2 && (
+                  <div className="p-4 bg-yellow-500/20 border border-yellow-400/50 rounded-lg text-yellow-200 text-sm text-center">
+                    Last attempt - please double-check!
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
                     Company Email
@@ -296,6 +338,17 @@ export default function BusinessVerification() {
               </form>
             </>
           )}
+          
+          {/* Footer with contact support link */}
+          <div className="mt-8 pt-6 border-t border-white/20 text-center">
+            <Link 
+              href="/contact-support" 
+              className="text-white/60 hover:text-white text-sm"
+              style={{ fontFamily: 'Rockwell, serif' }}
+            >
+              Need help? Contact Support
+            </Link>
+          </div>
         </div>
       </div>
 
