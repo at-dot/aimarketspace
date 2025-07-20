@@ -15,6 +15,17 @@ export default function ContactSupport() {
     e.preventDefault();
     setIsSubmitting(true);
     
+    // Rate limiting check - 15 minutes per email
+    const rateLimitKey = `contact_${formData.email}`;
+    const lastSubmit = localStorage.getItem(rateLimitKey);
+    const now = Date.now();
+    
+    if (lastSubmit && now - parseInt(lastSubmit) < 900000) { // 15 minutes = 900000ms
+      alert('Please allow 15 minutes between messages');
+      setIsSubmitting(false);
+      return;
+    }
+    
     try {
       const response = await fetch('https://formspree.io/f/manbqogb', {
         method: 'POST',
@@ -29,6 +40,8 @@ export default function ContactSupport() {
       });
 
       if (response.ok) {
+        // Save timestamp for rate limiting
+        localStorage.setItem(rateLimitKey, now.toString());
         setIsSubmitted(true);
       } else {
         alert('Something went wrong. Please try again.');
