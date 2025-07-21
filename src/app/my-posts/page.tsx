@@ -235,9 +235,9 @@ export default function MyPosts() {
           </button>
         </div>
 
-        {/* Create/Edit Form */}
+        {/* Create/Edit Form OR Posts List - Show only one at a time */}
         {showCreateForm ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 mb-8">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Rockwell, serif' }}>
               {editingPost ? 'Edit Post' : 'Create New Post'}
             </h2>
@@ -398,93 +398,96 @@ export default function MyPosts() {
             </form>
           </div>
         ) : (
-          /* Create New Post Button */
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="w-full bg-white/10 backdrop-blur-md rounded-xl p-8 mb-8 hover:bg-white/20 transition-all group"
-          >
-            <div className="text-center">
-              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">+</div>
-              <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Rockwell, serif' }}>
-                Create New Post
-              </h3>
-              <p className="text-white/70 mt-2">Share your project requirements with AI creators</p>
-            </div>
-          </button>
-        )}
+          <>
+            {/* Create New Post Button */}
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full bg-white/10 backdrop-blur-md rounded-xl p-8 mb-8 hover:bg-white/20 transition-all group"
+            >
+              <div className="text-center">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">+</div>
+                <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Rockwell, serif' }}>
+                  Create New Post
+                </h3>
+                <p className="text-white/70 mt-2">Share your project requirements with AI creators</p>
+              </div>
+            </button>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setActiveTab('active')}
-            className={`px-6 py-2 rounded-lg font-bold transition-all ${
-              activeTab === 'active'
-                ? 'bg-white text-purple-600'
-                : 'bg-white/20 text-white hover:bg-white/30'
-            }`}
-            style={{ fontFamily: 'Rockwell, serif' }}
-          >
-            Active Posts
-          </button>
-          <button
-            onClick={() => setActiveTab('archived')}
-            className={`px-6 py-2 rounded-lg font-bold transition-all ${
-              activeTab === 'archived'
-                ? 'bg-white text-purple-600'
-                : 'bg-white/20 text-white hover:bg-white/30'
-            }`}
-            style={{ fontFamily: 'Rockwell, serif' }}
-          >
-            Archived
-          </button>
-        </div>
-
-        {/* Posts List */}
-        {filteredPosts.length === 0 ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-12 text-center">
-            <p className="text-white/70 text-lg">
-              {activeTab === 'active' 
-                ? "You haven't created any posts yet."
-                : "No archived posts."}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredPosts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/20 transition-all"
+            {/* Tabs */}
+            <div className="flex gap-4 mb-6">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                  activeTab === 'active'
+                    ? 'bg-white text-purple-600'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+                style={{ fontFamily: 'Rockwell, serif' }}
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                      {post.project_title}
-                    </h3>
-                    <p className="text-white/70">{post.company_name}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {post.status === 'expired' && (
-                      <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-sm">
-                        Expired
-                      </span>
-                    )}
-                    {post.status === 'active' && (
-                      <span className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                </div>
+                Active Posts
+              </button>
+              <button
+                onClick={() => setActiveTab('archived')}
+                className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                  activeTab === 'archived'
+                    ? 'bg-white text-purple-600'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+                style={{ fontFamily: 'Rockwell, serif' }}
+              >
+                Archived
+              </button>
+            </div>
 
-                <p className="text-white/80 mb-4 line-clamp-2">{post.automation_needs}</p>
+            {/* Posts List */}
+            {filteredPosts.length === 0 ? (
+              <div className="bg-white/10 backdrop-blur-md rounded-xl p-12 text-center">
+                <p className="text-white/70 text-lg">
+                  {activeTab === 'active' 
+                    ? "You haven't created any posts yet."
+                    : "No archived posts."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/20 transition-all"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
+                          {post.project_title}
+                        </h3>
+                        <p className="text-white/70">{post.company_name}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {post.status === 'expired' && (
+                          <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-sm">
+                            Expired
+                          </span>
+                        )}
+                        {post.status === 'active' && (
+                          <span className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm">
+                            Active
+                          </span>
+                        )}
+                        {post.status === 'archived' && (
+                          <span className="px-3 py-1 bg-gray-500/20 text-gray-300 rounded-full text-sm">
+                            Archived
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="flex justify-between items-center">
-                  <p className="text-white/60 text-sm">
-                    Created: {new Date(post.created_at).toLocaleDateString()}
-                  </p>
-                  <div className="flex gap-2">
-                    {post.status !== 'archived' && (
-                      <>
+                    <p className="text-white/80 mb-4 line-clamp-2">{post.automation_needs}</p>
+
+                    <div className="flex justify-between items-center">
+                      <p className="text-white/60 text-sm">
+                        Created: {new Date(post.created_at).toLocaleDateString()}
+                      </p>
+                      <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(post)}
                           className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 text-sm"
@@ -492,27 +495,29 @@ export default function MyPosts() {
                         >
                           Edit
                         </button>
+                        {post.status !== 'archived' && (
+                          <button
+                            onClick={() => handleArchive(post.id)}
+                            className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 text-sm"
+                            style={{ fontFamily: 'Rockwell, serif' }}
+                          >
+                            Archive
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleArchive(post.id)}
-                          className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 text-sm"
+                          onClick={() => handleDelete(post.id)}
+                          className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 text-sm"
                           style={{ fontFamily: 'Rockwell, serif' }}
                         >
-                          Archive
+                          Delete
                         </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => handleDelete(post.id)}
-                      className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 text-sm"
-                      style={{ fontFamily: 'Rockwell, serif' }}
-                    >
-                      Delete
-                    </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 

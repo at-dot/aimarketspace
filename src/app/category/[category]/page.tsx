@@ -2,6 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface CreatorProfile {
   id: string;
@@ -19,6 +25,9 @@ export default function CategoryProfiles() {
   const [profiles, setProfiles] = useState<CreatorProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('');
+  const [userType, setUserType] = useState<'creator' | 'business' | null>(null);
+  const [hasActivePosts, setHasActivePosts] = useState(false);
+  const [userTypeLoading, setUserTypeLoading] = useState(false);
 
   // Sparkle component
   const Sparkle = ({ size = 24 }: { size?: number }) => (
@@ -59,6 +68,79 @@ export default function CategoryProfiles() {
     }
   }, [user, loading, router]);
 
+  // Determine user type based on creator profile, business profile, or metadata
+  useEffect(() => {
+    const checkUserType = async () => {
+      if (user) {
+        setUserTypeLoading(true);
+        console.log('Checking user type for:', user.email);
+        try {
+          // First check if user has a creator profile (by email)
+          const { data: creatorProfile, error: creatorError } = await supabase
+            .from('ams_creator_profiles')
+            .select('id')
+            .eq('username', user.email)
+            .single();
+
+          console.log('Creator profile check:', creatorProfile, creatorError);
+
+          if (creatorProfile && !creatorError) {
+            console.log('User is a creator');
+            setUserType('creator');
+            setUserTypeLoading(false);
+            return;
+          }
+
+          // Then check if user has a verified business profile
+          const { data: businessProfile, error: businessError } = await supabase
+            .from('ams_business_profiles')
+            .select('verification_status')
+            .eq('user_id', user.id)
+            .single();
+
+          console.log('Business profile check:', businessProfile, businessError);
+
+          if (businessProfile?.verification_status === 'verified' && !businessError) {
+            console.log('User is a business');
+            setUserType('business');
+            setUserTypeLoading(false);
+            return;
+          }
+
+          // Check metadata as fallback
+          const metadata = (user as { user_metadata?: { user_type?: string } }).user_metadata;
+          console.log('User metadata:', metadata);
+          if (metadata?.user_type === 'creator' || metadata?.user_type === 'business') {
+            console.log('Setting user type from metadata:', metadata.user_type);
+            setUserType(metadata.user_type);
+          }
+        } catch (error) {
+          console.error('Error checking user type:', error);
+        } finally {
+          setUserTypeLoading(false);
+        }
+      }
+    };
+
+    checkUserType();
+  }, [user]);
+
+  // Check if ANY business posts exist (not just current user's)
+  useEffect(() => {
+    const checkAnyPublishedPosts = async () => {
+      const { data } = await supabase
+        .from('business_posts')
+        .select('id')
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .limit(1);
+      
+      setHasActivePosts(data ? data.length > 0 : false);
+    };
+    
+    checkAnyPublishedPosts();
+  }, []);
+
   useEffect(() => {
     if (user && params.category) {
       const decodedCategory = decodeURIComponent(params.category as string);
@@ -95,7 +177,7 @@ export default function CategoryProfiles() {
     router.push(`/profile/${profileId}`);
   };
 
-  if (loading || isLoading) {
+  if (loading || isLoading || userTypeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl text-white" style={{fontFamily: 'Rockwell, serif'}}>Loading...</div>
@@ -118,10 +200,35 @@ export default function CategoryProfiles() {
           <div className="mb-8" style={{height: '1.6cm'}}></div>
           <nav className="space-y-2 overflow-y-auto flex-1 pr-2">
             <button onClick={() => router.push('/dashboard')} className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>Dashboard</button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed" disabled style={{fontFamily: 'Rockwell, serif'}}>Under Construction</button>
-            <button onClick={() => router.push('/profile')} className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>My Profile</button>
+            
+            {hasActivePosts ? (
+              <button onClick={() => router.push('/projects')} className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>Projects</button>
+            ) : (
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed" disabled style={{fontFamily: 'Rockwell, serif'}}>Under Construction</button>
+            )}
+            
+            {userType === 'business' && (
+              <button 
+                onClick={() => router.push('/my-posts')} 
+                className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" 
+                style={{fontFamily: 'Rockwell, serif'}}
+              >
+                My Posts
+              </button>
+            )}
+            
+            {userType === 'creator' && (
+              <button 
+                onClick={() => router.push('/profile')} 
+                className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" 
+                style={{fontFamily: 'Rockwell, serif'}}
+              >
+                My Profile
+              </button>
+            )}
+            
             <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>Docs</button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>Settings</button>
+            <button onClick={() => router.push('/settings')} className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>Settings</button>
           </nav>
           <div className="border-t border-white/20 pt-6 mt-6">
             <div className="flex items-center gap-3 mb-4">
@@ -130,6 +237,11 @@ export default function CategoryProfiles() {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-white" style={{fontFamily: 'Rockwell, serif'}}>{user?.email}</p>
+                {userType && (
+                  <p className="text-xs text-white/70" style={{fontFamily: 'Rockwell, serif'}}>
+                    {userType === 'business' ? 'Business Account' : 'Creator Account'}
+                  </p>
+                )}
               </div>
             </div>
             <button onClick={logout} className="w-full bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all" style={{fontFamily: 'Rockwell, serif'}}>Logout</button>
