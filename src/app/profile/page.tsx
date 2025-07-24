@@ -407,6 +407,7 @@ export default function Profile() {
             </button>
             
             <button 
+              onClick={() => router.push('/docs')}
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{fontFamily: 'Rockwell, serif'}}
             >
