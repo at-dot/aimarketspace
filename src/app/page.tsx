@@ -2,6 +2,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Home() {
   const [creatorEmail, setCreatorEmail] = useState('');
@@ -12,14 +18,61 @@ export default function Home() {
   const [businessSuccess, setBusinessSuccess] = useState(false);
   const [error, setError] = useState('');
   
+  // Terms checkbox states for new users
+  const [showCreatorTerms, setShowCreatorTerms] = useState(false);
+  const [showBusinessTerms, setShowBusinessTerms] = useState(false);
+  const [creatorTermsAccepted, setCreatorTermsAccepted] = useState(false);
+  const [businessTermsAccepted, setBusinessTermsAccepted] = useState(false);
+  
   const { sendMagicLink } = useAuth();
   const router = useRouter();
+
+  const checkUserExists = async (email: string, type: 'creator' | 'business') => {
+    const { data, error } = await supabase
+      .rpc('check_user_exists', { email_input: email });
+    
+    return data || false;
+  };
 
   const handleCreatorMagicLink = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setCreatorLoading(true);
     setError('');
     
+    try {
+      const userExists = await checkUserExists(creatorEmail, 'creator');
+      
+      if (!userExists) {
+        // New user - show terms
+        setShowCreatorTerms(true);
+        setCreatorLoading(false);
+        return;
+      }
+      
+      // Existing user - send magic link
+      const result = await sendMagicLink(creatorEmail, 'creator');
+
+      if (!result.success) {
+        setError(result.error || 'Failed to send magic link');
+        setCreatorLoading(false);
+      } else {
+        setCreatorSuccess(true);
+        setCreatorLoading(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('An error occurred. Please try again.');
+      setCreatorLoading(false);
+    }
+  };
+
+  const handleCreatorSignup = async () => {
+    if (!creatorTermsAccepted) return;
+    
+    setCreatorLoading(true);
+    setError('');
+    
+    // Send magic link for new creator
     const result = await sendMagicLink(creatorEmail, 'creator');
 
     if (!result.success) {
@@ -36,6 +89,40 @@ export default function Home() {
     setBusinessLoading(true);
     setError('');
     
+    try {
+      const userExists = await checkUserExists(businessEmail, 'business');
+      
+      if (!userExists) {
+        // New user - show terms
+        setShowBusinessTerms(true);
+        setBusinessLoading(false);
+        return;
+      }
+      
+      // Existing user - send magic link
+      const result = await sendMagicLink(businessEmail, 'business');
+
+      if (!result.success) {
+        setError(result.error || 'Failed to send magic link');
+        setBusinessLoading(false);
+      } else {
+        setBusinessSuccess(true);
+        setBusinessLoading(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('An error occurred. Please try again.');
+      setBusinessLoading(false);
+    }
+  };
+
+  const handleBusinessSignup = async () => {
+    if (!businessTermsAccepted) return;
+    
+    setBusinessLoading(true);
+    setError('');
+    
+    // Send magic link for new business
     const result = await sendMagicLink(businessEmail, 'business');
 
     if (!result.success) {
@@ -116,32 +203,85 @@ export default function Home() {
               </h2>
 
               {!creatorSuccess ? (
-                <form onSubmit={handleCreatorMagicLink} className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={creatorEmail}
-                      onChange={(e) => setCreatorEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
-                      style={{ fontFamily: 'Rockwell, serif' }}
-                      required
-                    />
-                  </div>
+                <>
+                  <form onSubmit={handleCreatorMagicLink} className="space-y-4">
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={creatorEmail}
+                        onChange={(e) => {
+                          setCreatorEmail(e.target.value);
+                          setShowCreatorTerms(false);
+                          setCreatorTermsAccepted(false);
+                        }}
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                        required
+                      />
+                    </div>
 
-                  <button
-                    type="submit"
-                    disabled={creatorLoading}
-                    className="w-full bg-white text-purple-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ fontFamily: 'Rockwell, serif' }}
-                  >
-                    {creatorLoading ? 'Sending magic link...' : 'Get Magic Link'}
-                  </button>
+                    {showCreatorTerms && (
+                      <div className="space-y-3 p-4 bg-white/10 rounded-lg">
+                        <p className="text-white/90 text-sm">New to AIMarketSpace? Please accept our terms to continue:</p>
+                        <div className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            id="creator-terms"
+                            checked={creatorTermsAccepted}
+                            onChange={(e) => setCreatorTermsAccepted(e.target.checked)}
+                            className="mt-1"
+                          />
+                          <label htmlFor="creator-terms" className="text-sm text-white/90">
+                            I agree to the{' '}
+                            <a 
+                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=9403ba0b-5f77-4db0-a334-35f80a8263fd"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-white"
+                            >
+                              Terms of Service ↗
+                            </a>
+                            {' '}and{' '}
+                            <a 
+                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=86356b42-5f4f-4bbc-8b19-373c792a3f7e"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-white"
+                            >
+                              Privacy Policy ↗
+                            </a>
+                          </label>
+                        </div>
+                      </div>
+                    )}
 
-                  <p className="text-white/70 text-sm text-center">
-                    We&apos;ll send you a login link - no password needed!
-                  </p>
-                </form>
+                    {!showCreatorTerms ? (
+                      <button
+                        type="submit"
+                        disabled={creatorLoading}
+                        className="w-full bg-white text-purple-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        {creatorLoading ? 'Checking...' : 'Get Magic Link'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleCreatorSignup}
+                        disabled={creatorLoading || !creatorTermsAccepted}
+                        className="w-full bg-white text-purple-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        {creatorLoading ? 'Creating account...' : 'Sign Up & Get Magic Link'}
+                      </button>
+                    )}
+
+                    <p className="text-white/70 text-sm text-center">
+                      We&apos;ll send you a login link - no password needed!
+                    </p>
+                  </form>
+                </>
               ) : (
                 <div className="text-center space-y-4">
                   <div className="text-green-300 text-lg">✓ Magic link sent!</div>
@@ -150,6 +290,8 @@ export default function Home() {
                     onClick={() => {
                       setCreatorSuccess(false);
                       setCreatorEmail('');
+                      setShowCreatorTerms(false);
+                      setCreatorTermsAccepted(false);
                     }}
                     className="text-white/70 hover:text-white text-sm underline"
                   >
@@ -169,32 +311,85 @@ export default function Home() {
               </h2>
 
               {!businessSuccess ? (
-                <form onSubmit={handleBusinessMagicLink} className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Enter company email"
-                      value={businessEmail}
-                      onChange={(e) => setBusinessEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
-                      style={{ fontFamily: 'Rockwell, serif' }}
-                      required
-                    />
-                  </div>
+                <>
+                  <form onSubmit={handleBusinessMagicLink} className="space-y-4">
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Enter company email"
+                        value={businessEmail}
+                        onChange={(e) => {
+                          setBusinessEmail(e.target.value);
+                          setShowBusinessTerms(false);
+                          setBusinessTermsAccepted(false);
+                        }}
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                        required
+                      />
+                    </div>
 
-                  <button
-                    type="submit"
-                    disabled={businessLoading}
-                    className="w-full bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ fontFamily: 'Rockwell, serif' }}
-                  >
-                    {businessLoading ? 'Sending magic link...' : 'Get Magic Link'}
-                  </button>
+                    {showBusinessTerms && (
+                      <div className="space-y-3 p-4 bg-white/10 rounded-lg">
+                        <p className="text-white/90 text-sm">New to AIMarketSpace? Please accept our terms to continue:</p>
+                        <div className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            id="business-terms"
+                            checked={businessTermsAccepted}
+                            onChange={(e) => setBusinessTermsAccepted(e.target.checked)}
+                            className="mt-1"
+                          />
+                          <label htmlFor="business-terms" className="text-sm text-white/90">
+                            I agree to the{' '}
+                            <a 
+                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=9403ba0b-5f77-4db0-a334-35f80a8263fd"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-white"
+                            >
+                              Terms of Service ↗
+                            </a>
+                            {' '}and{' '}
+                            <a 
+                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=86356b42-5f4f-4bbc-8b19-373c792a3f7e"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-white"
+                            >
+                              Privacy Policy ↗
+                            </a>
+                          </label>
+                        </div>
+                      </div>
+                    )}
 
-                  <p className="text-white/70 text-sm text-center">
-                    We&apos;ll send you a login link - no password needed!
-                  </p>
-                </form>
+                    {!showBusinessTerms ? (
+                      <button
+                        type="submit"
+                        disabled={businessLoading}
+                        className="w-full bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        {businessLoading ? 'Checking...' : 'Get Magic Link'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleBusinessSignup}
+                        disabled={businessLoading || !businessTermsAccepted}
+                        className="w-full bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ fontFamily: 'Rockwell, serif' }}
+                      >
+                        {businessLoading ? 'Creating account...' : 'Sign Up & Get Magic Link'}
+                      </button>
+                    )}
+
+                    <p className="text-white/70 text-sm text-center">
+                      We&apos;ll send you a login link - no password needed!
+                    </p>
+                  </form>
+                </>
               ) : (
                 <div className="text-center space-y-4">
                   <div className="text-green-300 text-lg">✓ Magic link sent!</div>
@@ -203,6 +398,8 @@ export default function Home() {
                     onClick={() => {
                       setBusinessSuccess(false);
                       setBusinessEmail('');
+                      setShowBusinessTerms(false);
+                      setBusinessTermsAccepted(false);
                     }}
                     className="text-white/70 hover:text-white text-sm underline"
                   >
@@ -219,18 +416,6 @@ export default function Home() {
               {error}
             </div>
           )}
-
-          {/* Sign up section */}
-          <div className="border-t border-white/20 mt-8 pt-8">
-            <div className="text-center">
-              <span className="text-white/80 text-sm" style={{ fontFamily: 'Rockwell, serif' }}>
-                First time here?
-              </span>
-              <a href="/signup" className="text-white font-bold text-sm hover:underline ml-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                Create account
-              </a>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -273,6 +458,17 @@ export default function Home() {
           animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
+      
+      {/* Cookie Preferences Link - Fixed at bottom */}
+      <div className="fixed bottom-4 left-4 z-50">
+        <a 
+          href="#" 
+          className="termly-display-preferences text-white/60 text-sm underline hover:text-white/80 transition-colors"
+          style={{ fontFamily: 'Rockwell, serif' }}
+        >
+          Cookie Settings
+        </a>
+      </div>
     </div>
   );
 }
