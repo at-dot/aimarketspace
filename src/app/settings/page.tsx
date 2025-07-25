@@ -189,8 +189,13 @@ export default function Settings() {
                 My Profile
               </button>
             )}
-            
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" style={{fontFamily: 'Rockwell, serif'}}>Docs</button>
+            <button 
+  onClick={() => router.push('/docs')} 
+  className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" 
+  style={{fontFamily: 'Rockwell, serif'}}
+>
+  Docs
+</button>
             <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg bg-white/20 text-white font-medium hover:bg-white/30 transition-all" style={{fontFamily: 'Rockwell, serif'}}>Settings</button>
           </nav>
           
@@ -254,7 +259,7 @@ export default function Settings() {
             {!showDeleteConfirm ? (
               <div>
                 <p className="text-white/80 mb-4" style={{fontFamily: 'Rockwell, serif'}}>
-                  Once you delete your account, there is no going back. Please be certain.
+                  We're sorry to see you go! Please note that account deletion is permanent.
                 </p>
                 <button 
                   onClick={() => setShowDeleteConfirm(true)}

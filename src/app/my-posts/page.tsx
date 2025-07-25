@@ -268,7 +268,7 @@ export default function MyPosts() {
                    value={formData.project_title}
                    onChange={(e) => setFormData({ ...formData, project_title: e.target.value })}
                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60"
-                   placeholder="e.g., Lead Qualification Bot"
+                   placeholder="e.g., Chatbot"
                    required
                  />
                </div>
@@ -296,7 +296,7 @@ export default function MyPosts() {
                  value={formData.automation_needs}
                  onChange={(e) => setFormData({ ...formData, automation_needs: e.target.value })}
                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 min-h-[120px]"
-                 placeholder="What business challenge are you looking to solve?"
+                 placeholder="e.g. Looking for customer service chatbot that can..."
                  required
                />
              </div>
@@ -365,7 +365,7 @@ export default function MyPosts() {
                  value={formData.additional_info}
                  onChange={(e) => setFormData({ ...formData, additional_info: e.target.value })}
                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 min-h-[100px]"
-                 placeholder="Any other details..."
+                 placeholder="Any specific needs or preferences?"
                />
              </div>
 

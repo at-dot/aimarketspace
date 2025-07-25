@@ -72,8 +72,10 @@ export default function Home() {
     setCreatorLoading(true);
     setError('');
     
-    // Send magic link for new creator
-    const result = await sendMagicLink(creatorEmail, 'creator');
+    // Send magic link for new creator with terms acceptance timestamp
+    const result = await sendMagicLink(creatorEmail, 'creator', {
+      terms_accepted_at: new Date().toISOString()
+    });
 
     if (!result.success) {
       setError(result.error || 'Failed to send magic link');
@@ -122,8 +124,10 @@ export default function Home() {
     setBusinessLoading(true);
     setError('');
     
-    // Send magic link for new business
-    const result = await sendMagicLink(businessEmail, 'business');
+    // Send magic link for new business with terms acceptance timestamp
+    const result = await sendMagicLink(businessEmail, 'business', {
+      terms_accepted_at: new Date().toISOString()
+    });
 
     if (!result.success) {
       setError(result.error || 'Failed to send magic link');
@@ -278,7 +282,7 @@ export default function Home() {
                     )}
 
                     <p className="text-white/70 text-sm text-center">
-                      We&apos;ll send you a login link - no password needed!
+                      We&apos;ll send you a login link!
                     </p>
                   </form>
                 </>
@@ -386,7 +390,7 @@ export default function Home() {
                     )}
 
                     <p className="text-white/70 text-sm text-center">
-                      We&apos;ll send you a login link - no password needed!
+                      We&apos;ll send you a login link!
                     </p>
                   </form>
                 </>

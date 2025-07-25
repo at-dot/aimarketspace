@@ -18,7 +18,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  sendMagicLink: (email: string, userType: 'creator' | 'business') => Promise<{ success: boolean; error?: string }>;
+  sendMagicLink: (email: string, userType: 'creator' | 'business', additionalData?: any) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -78,13 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const sendMagicLink = async (email: string, userType: 'creator' | 'business') => {
+  const sendMagicLink = async (email: string, userType: 'creator' | 'business', additionalData?: any) => {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           data: { 
-            user_type: userType 
+            user_type: userType,
+            ...additionalData  // Spread additional data (like terms_accepted_at)
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`
         }

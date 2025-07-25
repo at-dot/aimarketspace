@@ -3,6 +3,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface UserProfile {
   id: string;
@@ -29,6 +35,7 @@ export default function ViewProfile() {
   const params = useParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasAnyPublishedPosts, setHasAnyPublishedPosts] = useState(false);
 
   const Sparkle = ({ size = 24 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
@@ -90,6 +97,22 @@ export default function ViewProfile() {
     }
   }, [user, params.id, fetchProfile]);
 
+  // Check if ANY business posts exist (not just current user's)
+  useEffect(() => {
+    const checkAnyPublishedPosts = async () => {
+      const { data } = await supabase
+        .from('business_posts')
+        .select('id')
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .limit(1);
+      
+     setHasAnyPublishedPosts(data ? data.length > 0 : false);
+    };
+    
+    checkAnyPublishedPosts();
+  }, []);
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -126,16 +149,28 @@ export default function ViewProfile() {
             <button onClick={() => router.push('/dashboard')}
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{ fontFamily: 'Rockwell, serif' }}>Dashboard</button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed" disabled
-              style={{ fontFamily: 'Rockwell, serif' }}>Under Construction</button>
+            
+            <button 
+              onClick={() => hasAnyPublishedPosts ? router.push('/projects') : undefined}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 ${
+                !hasAnyPublishedPosts ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={!hasAnyPublishedPosts}
+              style={{ fontFamily: 'Rockwell, serif' }}
+            >
+              {hasAnyPublishedPosts ? 'Projects' : 'Under Construction'}
+            </button>
+            
             {user && (
               <button onClick={() => router.push('/profile')}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
                 style={{ fontFamily: 'Rockwell, serif' }}>My Profile</button>
             )}
             <button onClick={() => router.push('/docs')} className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
-  style={{ fontFamily: 'Rockwell, serif' }}>Docs</button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
+              style={{ fontFamily: 'Rockwell, serif' }}>Docs</button>
+            <button 
+              onClick={() => router.push('/settings')}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{ fontFamily: 'Rockwell, serif' }}>Settings</button>
           </nav>
           <div className="border-t border-white/20 pt-6 mt-6">

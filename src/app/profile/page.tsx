@@ -39,6 +39,7 @@ export default function Profile() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [userType, setUserType] = useState<'creator' | 'business' | null>(null);
+  const [hasAnyPublishedPosts, setHasAnyPublishedPosts] = useState(false);
   
   // Form fields
   const [formData, setFormData] = useState({
@@ -130,6 +131,22 @@ export default function Profile() {
       setUserType(user.user_type || 'creator');
     }
   }, [user]);
+
+  // Check if ANY business posts exist (not just current user's) - NOVO!
+  useEffect(() => {
+    const checkAnyPublishedPosts = async () => {
+      const { data } = await supabase
+        .from('business_posts')
+        .select('id')
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .limit(1);
+      
+     setHasAnyPublishedPosts(data ? data.length > 0 : false);
+    };
+    
+    checkAnyPublishedPosts();
+  }, []);
 
   // Load video metadata when video URL changes  
   useEffect(() => {
@@ -391,11 +408,14 @@ export default function Profile() {
             </button>
             
             <button 
-              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 opacity-50 cursor-not-allowed"
-              disabled
+              onClick={() => hasAnyPublishedPosts ? router.push('/projects') : undefined}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80 ${
+                !hasAnyPublishedPosts ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={!hasAnyPublishedPosts}
               style={{fontFamily: 'Rockwell, serif'}}
             >
-              Under Construction
+              {hasAnyPublishedPosts ? 'Projects' : 'Under Construction'}
             </button>
             
             <button 
@@ -415,7 +435,7 @@ export default function Profile() {
             </button>
             
             <button 
-            onClick={() => router.push('/settings')}
+              onClick={() => router.push('/settings')}
               className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80"
               style={{fontFamily: 'Rockwell, serif'}}
             >
@@ -623,7 +643,7 @@ export default function Profile() {
                     maxLength={600}
                     className="w-full px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
                     style={{fontFamily: 'Rockwell, serif'}}
-                    placeholder="Tell us about yourself and your work (100 words)..."
+                    placeholder="Share your professional background and approach to AI automation (100 words)..."
                   />
                 ) : (
                   <p className="text-white/90 leading-relaxed" style={{fontFamily: 'Rockwell, serif'}}>{formData.bio || <span className="text-white/60">Not set</span>}</p>

@@ -18,11 +18,9 @@ export default function BusinessVerification() {
  const [submitting, setSubmitting] = useState(false);
  const [businessProfile, setBusinessProfile] = useState<any>(null);
  const [formData, setFormData] = useState({
-   company_website: '',
-   linkedin_url: ''
+   company_website: ''
  });
  const [error, setError] = useState('');
- const [agreedToTerms, setAgreedToTerms] = useState(false);
 
  useEffect(() => {
    checkBusinessProfile();
@@ -77,7 +75,6 @@ export default function BusinessVerification() {
        user_id: user?.id,
        company_email: user?.email,
        company_website: formData.company_website,
-       linkedin_url: formData.linkedin_url || null,
        verification_status: 'pending',
        attempt_count: (businessProfile?.attempt_count || 0) + 1,
        updated_at: new Date().toISOString()
@@ -109,7 +106,6 @@ export default function BusinessVerification() {
      const webhookData = {
        email: user?.email,
        website: formData.company_website,
-       linkedin: formData.linkedin_url,
        userId: user?.id
      };
 
@@ -197,11 +193,6 @@ export default function BusinessVerification() {
              <p className="text-white/70 text-sm">
                Company Website: {businessProfile.company_website}
              </p>
-             {businessProfile.linkedin_url && (
-               <p className="text-white/70 text-sm">
-                 LinkedIn: {businessProfile.linkedin_url}
-               </p>
-             )}
              <button
                onClick={() => window.location.reload()}
                className="mt-6 text-white/70 hover:text-white underline"
@@ -255,11 +246,7 @@ export default function BusinessVerification() {
            </div>
          ) : (
            <>
-             <p className="text-white/80 text-center mb-8">
-               Please provide your business information to start posting job opportunities
-             </p>
-
-             <form onSubmit={handleSubmit} className="space-y-6">
+             <form onSubmit={handleSubmit} className="space-y-6 mt-8">
                {/* Show warning for last attempt */}
                {businessProfile?.attempt_count === 2 && (
                  <div className="p-4 bg-yellow-500/20 border border-yellow-400/50 rounded-lg text-yellow-200 text-sm text-center">
@@ -297,61 +284,6 @@ export default function BusinessVerification() {
                  <p className="text-white/50 text-sm mt-1">Your official company website</p>
                </div>
 
-               <div>
-                 <label className="block text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                   LinkedIn Company Profile (Optional)
-                 </label>
-                 <input
-                   type="url"
-                   placeholder="https://linkedin.com/company/your-company"
-                   value={formData.linkedin_url}
-                   onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                   className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50"
-                   style={{ fontFamily: 'Rockwell, serif' }}
-                 />
-               </div>
-
-               {/* Terms and Conditions Checkbox */}
-               <div className="flex items-start gap-2">
-                 <input
-                   type="checkbox"
-                   id="terms"
-                   checked={agreedToTerms}
-                   onChange={(e) => setAgreedToTerms(e.target.checked)}
-                   className="mt-1"
-                   required
-                 />
-                 <label htmlFor="terms" className="text-sm text-white/90">
-                   I agree to the{' '}
-                   <a 
-                     href="https://app.termly.io/policy-viewer/policy.html?policyUUID=9403ba0b-5f77-4db0-a334-35f80a8263fd"
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="underline hover:text-white"
-                   >
-                     Terms ↗
-                   </a>
-                   ,{' '}
-                   <a 
-                     href="https://app.termly.io/policy-viewer/policy.html?policyUUID=86356b42-5f4f-4bbc-8b19-373c792a3f7e"
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="underline hover:text-white"
-                   >
-                     Privacy Policy ↗
-                   </a>
-                   , and{' '}
-                   <a 
-                     href="https://app.termly.io/policy-viewer/policy.html?policyUUID=ff935579-40e4-4436-8de8-09386ce3a2bd"
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="underline hover:text-white"
-                   >
-                     Cookie Policy ↗
-                   </a>
-                 </label>
-               </div>
-
                {error && (
                  <div className="p-4 bg-red-500/20 border border-red-400/50 rounded-lg text-white text-sm">
                    {error}
@@ -360,7 +292,7 @@ export default function BusinessVerification() {
 
                <button
                  type="submit"
-                 disabled={submitting || !agreedToTerms}
+                 disabled={submitting}
                  className="w-full bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                  style={{ fontFamily: 'Rockwell, serif' }}
                >
@@ -368,7 +300,7 @@ export default function BusinessVerification() {
                </button>
 
                <p className="text-white/60 text-sm text-center">
-                 We'll verify that your email domain matches your company website
+                 We'll verify that your email domain matches your company website as well as if provided website exists
                </p>
              </form>
            </>

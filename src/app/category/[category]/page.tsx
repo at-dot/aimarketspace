@@ -255,12 +255,10 @@ export default function CategoryProfiles() {
               <Sparkle size={40} />
               <h1 className="text-4xl font-bold text-white" style={{fontFamily: 'Rockwell, serif', fontStyle: 'italic'}}>AIMarketSpace</h1>
             </div>
-            <p className="text-white/90 mt-2" style={{fontFamily: 'Rockwell, serif'}}>Find AI Solutions for Your Business</p>
           </div>
         </header>
         <div className="bg-white/5 backdrop-blur-sm py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <button onClick={() => router.push('/dashboard')} className="text-white/70 hover:text-white mb-4 flex items-center gap-2 transition" style={{fontFamily: 'Rockwell, serif'}}>← Back to Dashboard</button>
             <h2 className="text-3xl font-bold text-white" style={{fontFamily: 'Rockwell, serif'}}>{categoryName}</h2>
             <p className="text-white/80 mt-2" style={{fontFamily: 'Rockwell, serif'}}>{profiles.length} {profiles.length === 1 ? 'creator' : 'creators'} offering solutions in this category</p>
           </div>
