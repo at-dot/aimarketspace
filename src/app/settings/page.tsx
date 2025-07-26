@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import Link from 'next/link';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -190,12 +191,12 @@ export default function Settings() {
               </button>
             )}
             <button 
-  onClick={() => router.push('/docs')} 
-  className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" 
-  style={{fontFamily: 'Rockwell, serif'}}
->
-  Docs
-</button>
+              onClick={() => router.push('/docs')} 
+              className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg hover:bg-white/10 transition-all text-white/80" 
+              style={{fontFamily: 'Rockwell, serif'}}
+            >
+              Docs
+            </button>
             <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg bg-white/20 text-white font-medium hover:bg-white/30 transition-all" style={{fontFamily: 'Rockwell, serif'}}>Settings</button>
           </nav>
           
@@ -225,9 +226,6 @@ export default function Settings() {
       <div className="flex-1 ml-64 relative z-10">
         <header className="bg-white/10 backdrop-blur-md shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <button onClick={() => router.push('/dashboard')} className="text-white/70 hover:text-white mb-4 flex items-center gap-2" style={{fontFamily: 'Rockwell, serif'}}>
-              ← Back to Dashboard
-            </button>
             <h1 className="text-3xl font-bold text-white" style={{fontFamily: 'Rockwell, serif'}}>Settings</h1>
           </div>
         </header>
@@ -272,13 +270,8 @@ export default function Settings() {
             ) : (
               <div>
                 <p className="text-white mb-4" style={{fontFamily: 'Rockwell, serif'}}>
-                  This action cannot be undone. This will permanently delete:
+                  This action cannot be undone.
                 </p>
-                <ul className="list-disc list-inside text-white/80 mb-4 space-y-1" style={{fontFamily: 'Rockwell, serif'}}>
-                  <li>Your account and profile</li>
-                  {userType === 'business' && <li>All your business posts</li>}
-                  {userType === 'creator' && <li>Your creator profile and portfolio</li>}
-                </ul>
                 
                 <p className="text-white mb-4" style={{fontFamily: 'Rockwell, serif'}}>
                   Please type <span className="font-bold text-red-400">DELETE</span> to confirm:
@@ -317,6 +310,19 @@ export default function Settings() {
             )}
           </div>
         </main>
+
+        {/* Footer with contact support link */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="text-center">
+            <Link 
+              href="/contact-support" 
+              className="text-white/60 hover:text-white text-sm"
+              style={{ fontFamily: 'Rockwell, serif' }}
+            >
+              Need help? Contact Support
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Animations */}

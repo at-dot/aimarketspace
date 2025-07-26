@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 'use client';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient } from '@supabase/supabase-js';
@@ -18,7 +17,11 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  sendMagicLink: (email: string, userType: 'creator' | 'business', additionalData?: any) => Promise<{ success: boolean; error?: string }>;
+  sendMagicLink: (
+    email: string, 
+    userType: 'creator' | 'business',
+    metadata?: { terms_accepted_at?: string }
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -78,15 +81,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const sendMagicLink = async (email: string, userType: 'creator' | 'business', additionalData?: any) => {
+  const sendMagicLink = async (
+    email: string, 
+    userType: 'creator' | 'business',
+    metadata?: { terms_accepted_at?: string }
+  ) => {
     try {
+      // Pripremi podatke koji će biti sačuvani u user_metadata
+      const userMetadata: any = { 
+        user_type: userType 
+      };
+
+      // Ako je prosleđen terms_accepted_at, dodaj ga u metadata
+      if (metadata?.terms_accepted_at) {
+        userMetadata.terms_accepted_at = metadata.terms_accepted_at;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          data: { 
-            user_type: userType,
-            ...additionalData  // Spread additional data (like terms_accepted_at)
-          },
+          data: userMetadata,
           emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       });

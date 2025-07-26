@@ -254,7 +254,7 @@ export default function Dashboard() {
             <p className="text-white/90 mt-2" style={{ fontFamily: 'Rockwell, serif' }}>
               {userType === 'business'
                 ? 'Find AI Solutions for Your Business'
-                : 'Browse Opportunities in Different Sectors'}
+                : 'Explore Opportunities'}
             </p>
           </div>
         </header>

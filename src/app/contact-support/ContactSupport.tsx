@@ -143,7 +143,7 @@ export default function ContactSupport() {
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 min-h-[150px] resize-y"
                 style={{ fontFamily: 'Rockwell, serif' }}
-                placeholder="I need help with (please provide details)..."
+                placeholder="What can we assist you with?"
                 required
               />
             </div>
