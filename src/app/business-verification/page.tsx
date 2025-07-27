@@ -17,6 +17,7 @@ export default function BusinessVerification() {
  const [loading, setLoading] = useState(true);
  const [submitting, setSubmitting] = useState(false);
  const [businessProfile, setBusinessProfile] = useState<any>(null);
+ const [showForm, setShowForm] = useState(false);
  const [formData, setFormData] = useState({
    company_website: ''
  });
@@ -129,6 +130,7 @@ export default function BusinessVerification() {
      console.log('Webhooks sent to both URLs');
 
      setBusinessProfile(result.data);
+     setShowForm(false); // Reset showForm after successful submission
      
    } catch (error: any) {
      console.error('Error submitting:', error);
@@ -216,7 +218,7 @@ export default function BusinessVerification() {
                Contact Support
              </Link>
            </div>
-         ) : businessProfile?.verification_status === 'rejected' ? (
+         ) : businessProfile?.verification_status === 'rejected' && !showForm ? (
            // Rejected but can try again
            <div className="text-center py-8">
              <div className="text-red-300 text-6xl mb-4">❌</div>
@@ -226,7 +228,7 @@ export default function BusinessVerification() {
              </p>
              <div className="flex gap-4 justify-center">
                <button
-                 onClick={() => setBusinessProfile(null)}
+                 onClick={() => setShowForm(true)}
                  className="bg-white text-blue-600 py-2 px-6 rounded-lg font-bold hover:bg-white/90"
                  style={{ fontFamily: 'Rockwell, serif' }}
                >
@@ -244,7 +246,7 @@ export default function BusinessVerification() {
                Attempts used: {businessProfile.attempt_count}/3
              </p>
            </div>
-         ) : (
+         ) : (!businessProfile || showForm) ? (
            <>
              <form onSubmit={handleSubmit} className="space-y-6 mt-8">
                {/* Show warning for last attempt */}
@@ -304,7 +306,7 @@ export default function BusinessVerification() {
                </p>
              </form>
            </>
-         )}
+         ) : null}
          
          {/* Footer with contact support link */}
          <div className="mt-8 pt-6 border-t border-white/20 text-center">
