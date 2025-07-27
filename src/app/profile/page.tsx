@@ -488,7 +488,11 @@ export default function Profile() {
                 style={{fontFamily: 'Rockwell, serif'}}
               >
                 {isEditing ? 'View Profile' : 'Edit Profile'}
-              </button>
+              </button>{isEditing && (
+      <p className="text-yellow-300 text-sm mt-2" style={{fontFamily: 'Rockwell, serif'}}>
+        Remember to save your changes!
+      </p>
+    )}
             </div>
           </div>
         </header>

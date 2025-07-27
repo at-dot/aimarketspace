@@ -23,21 +23,33 @@ export default function AuthCallback() {
         
         // Ako je biznis korisnik, proveri verifikaciju
         if (userType === 'business') {
-          const { data: businessProfile } = await supabase
-            .from('ams_business_profiles')
-            .select('verification_status')
-            .eq('user_id', session.user.id)
-            .single();
-          
-          // Ako nema profil ili nije verified, idi na business-verification
-          if (!businessProfile || businessProfile.verification_status !== 'verified') {
+          try {
+            const { data: businessProfile, error } = await supabase
+              .from('ams_business_profiles')
+              .select('verification_status')
+              .eq('user_id', session.user.id)
+              .single();
+            
+            // Ako ima grešku (profil ne postoji) ili status nije verified
+            if (error || !businessProfile || businessProfile.verification_status !== 'verified') {
+              router.push('/business-verification');
+              return;
+            }
+            
+            // Ako je verified business, idi na my-posts ili dashboard
+            router.push('/my-posts');
+            return;
+            
+          } catch (err) {
+            // Ako se desi bilo kakva greška, pošalji na verifikaciju
+            console.error('Error checking business profile:', err);
             router.push('/business-verification');
             return;
           }
         }
       }
       
-      // Za sve ostale slučajeve (creator ili verified business), idi na dashboard
+      // Za creator korisnike ili ako nema sesije, idi na dashboard
       router.push('/dashboard');
     }
 
