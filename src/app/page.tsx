@@ -239,7 +239,7 @@ export default function Home() {
                           <label htmlFor="creator-terms" className="text-sm text-white/90">
                             I agree to the{' '}
                             <a 
-                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=9403ba0b-5f77-4db0-a334-35f80a8263fd"
+                              href="/legal/terms.html"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="underline hover:text-white"
@@ -248,7 +248,7 @@ export default function Home() {
                             </a>
                             {' '}and{' '}
                             <a 
-                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=86356b42-5f4f-4bbc-8b19-373c792a3f7e"
+                              href="/legal/privacy.html"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="underline hover:text-white"
@@ -347,7 +347,7 @@ export default function Home() {
                           <label htmlFor="business-terms" className="text-sm text-white/90">
                             I agree to the{' '}
                             <a 
-                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=9403ba0b-5f77-4db0-a334-35f80a8263fd"
+                              href="/legal/terms.html"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="underline hover:text-white"
@@ -356,7 +356,7 @@ export default function Home() {
                             </a>
                             {' '}and{' '}
                             <a 
-                              href="https://app.termly.io/policy-viewer/policy.html?policyUUID=86356b42-5f4f-4bbc-8b19-373c792a3f7e"
+                              href="/legal/privacy.html"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="underline hover:text-white"
@@ -463,16 +463,26 @@ export default function Home() {
         }
       `}</style>
       
-      {/* Cookie Preferences Link - Fixed at bottom */}
-      <div className="fixed bottom-4 left-4 z-50">
-        <a 
-          href="#" 
-          className="termly-display-preferences text-white/60 text-sm underline hover:text-white/80 transition-colors"
-          style={{ fontFamily: 'Rockwell, serif' }}
-        >
-          Cookie Settings
-        </a>
-      </div>
-    </div>
-  );
-}
+      {/* Cookie Links - Fixed at bottom */}
+<div className="fixed bottom-4 left-4 z-50 flex items-center gap-3">
+  <a 
+    href="#" 
+    className="termly-display-preferences text-white/60 text-sm underline hover:text-white/80 transition-colors"
+    style={{ fontFamily: 'Rockwell, serif' }}
+  >
+    Cookie Settings
+  </a>
+  <span className="text-white/40">|</span>
+  <a 
+    href="/legal/cookies.html"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-white/60 text-sm underline hover:text-white/80 transition-colors"
+    style={{ fontFamily: 'Rockwell, serif' }}
+  >
+    Cookie Policy
+  </a>
+  </div>
+</div>
+ );      {/* Zatvara return statement */}
+}   

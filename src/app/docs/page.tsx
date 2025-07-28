@@ -67,7 +67,7 @@ export default function DocsPage() {
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-4">
             <a 
-              href="/docs/terms-of-service" 
+              href="/legal/terms.html" 
               className="block p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg hover:bg-white/20 transition-all transform hover:-translate-y-1"
             >
               <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
@@ -79,7 +79,7 @@ export default function DocsPage() {
             </a>
             
             <a 
-              href="/docs/privacy-policy" 
+              href="/legal/privacy.html" 
               className="block p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg hover:bg-white/20 transition-all transform hover:-translate-y-1"
             >
               <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
@@ -89,33 +89,9 @@ export default function DocsPage() {
                 Learn how we handle your personal information
               </p>
             </a>
-            
-            <a 
-              href="/docs/cookie-policy" 
-              className="block p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg hover:bg-white/20 transition-all transform hover:-translate-y-1"
-            >
-              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                Cookie Policy
-              </h2>
-              <p className="text-white/80" style={{ fontFamily: 'Rockwell, serif' }}>
-                Understand how we use cookies on our platform
-              </p>
-            </a>
-            
-            <a 
-              href="/docs/disclaimer" 
-              className="block p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg hover:bg-white/20 transition-all transform hover:-translate-y-1"
-            >
-              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                Disclaimer
-              </h2>
-              <p className="text-white/80" style={{ fontFamily: 'Rockwell, serif' }}>
-                Important information about platform limitations and liability
-              </p>
-            </a>
-          </div>
+        </div>
         </main>
-      </div>
+      </div>  
 
       {/* CSS for animations */}
       <style jsx>{`
