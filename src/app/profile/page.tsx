@@ -570,7 +570,7 @@ export default function Profile() {
                     onChange={(e) => handleChange('title', e.target.value)}
                     className="w-full px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:bg-white/30 focus:border-white/50 transition-all"
                     style={{fontFamily: 'Rockwell, serif'}}
-                    placeholder="Chatbot Developer"
+                    placeholder="Developer"
                   />
                 </div>
               )}
