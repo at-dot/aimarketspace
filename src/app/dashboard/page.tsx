@@ -248,7 +248,7 @@ export default function Dashboard() {
                 className="text-4xl font-bold text-white"
                 style={{ fontFamily: 'Rockwell, serif', fontStyle: 'italic' }}
               >
-                AIMarketSpace
+                AIMeetPlace
               </h1>
             </div>
             <p className="text-white/90 mt-2" style={{ fontFamily: 'Rockwell, serif' }}>

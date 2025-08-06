@@ -37,7 +37,7 @@ export default function AuthCallback() {
             }
             
             // Ako je verified business, idi na my-posts ili dashboard
-            router.push('/my-posts');
+            router.push('/dashboard');
             return;
             
           } catch (err) {

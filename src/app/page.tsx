@@ -190,7 +190,7 @@ export default function Home() {
             <Sparkle size={64} />
           </div>
           <h1 className="text-5xl text-white mb-2 drop-shadow-lg font-bold italic" style={{ fontFamily: 'Rockwell, serif' }}>
-            AIMarketSpace
+            AIMeetPlace
           </h1>
           <p className="text-white/90 text-lg" style={{ fontFamily: 'Rockwell, serif' }}>
             Where AI Solutions Meet Business Needs
@@ -227,7 +227,7 @@ export default function Home() {
 
                     {showCreatorTerms && (
                       <div className="space-y-3 p-4 bg-white/10 rounded-lg">
-                        <p className="text-white/90 text-sm">New to AIMarketSpace? Please accept our terms to continue:</p>
+                        <p className="text-white/90 text-sm">New to AIMeetPlace? Please accept our terms to continue:</p>
                         <div className="flex items-start gap-2">
                           <input
                             type="checkbox"
@@ -335,7 +335,7 @@ export default function Home() {
 
                     {showBusinessTerms && (
                       <div className="space-y-3 p-4 bg-white/10 rounded-lg">
-                        <p className="text-white/90 text-sm">New to AIMarketSpace? Please accept our terms to continue:</p>
+                        <p className="text-white/90 text-sm">New to AIMeetPlace? Please accept our terms to continue:</p>
                         <div className="flex items-start gap-2">
                           <input
                             type="checkbox"

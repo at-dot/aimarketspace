@@ -194,7 +194,7 @@ export default function ViewProfile() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Sparkle size={40} />
-              <h1 className="text-4xl font-bold text-white" style={{ fontFamily: 'Rockwell, serif', fontStyle: 'italic' }}>AIMarketSpace</h1>
+              <h1 className="text-4xl font-bold text-white" style={{ fontFamily: 'Rockwell, serif', fontStyle: 'italic' }}>AIMeetPlace</h1>
             </div>
             <p className="text-white/90 mt-2" style={{ fontFamily: 'Rockwell, serif' }}>Find AI Solutions for Your Business</p>
           </div>

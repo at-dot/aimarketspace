@@ -35,7 +35,7 @@ export default function ContactSupport() {
         body: JSON.stringify({
           email: formData.email,
           message: formData.message,
-          _subject: 'AIMarketSpace Support Request'
+          _subject: 'AIMeetSpace Support Request'
         }),
       });
 

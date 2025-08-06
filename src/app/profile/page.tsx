@@ -477,7 +477,7 @@ export default function Profile() {
             <div className="flex items-center justify-center gap-3 mb-2">
               <Sparkle size={40} />
               <h1 className="text-4xl font-bold text-white" style={{fontFamily: 'Rockwell, serif', fontStyle: 'italic'}}>
-                AIMarketSpace
+                AIMeetPlace
               </h1>
             </div>
             <div className="mt-4 flex justify-between items-center">

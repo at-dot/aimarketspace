@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
-  title: 'AIMarketSpace',
+  title: 'AIMeetPlace',
   description: 'Where AI Solutions Meet Business Needs',
 }
 
