@@ -463,26 +463,6 @@ export default function Home() {
         }
       `}</style>
       
-      {/* Cookie Links - Fixed at bottom */}
-<div className="fixed bottom-4 left-4 z-50 flex items-center gap-3">
-  <a 
-    href="#" 
-    className="termly-display-preferences text-white/60 text-sm underline hover:text-white/80 transition-colors"
-    style={{ fontFamily: 'Rockwell, serif' }}
-  >
-    Cookie Settings
-  </a>
-  <span className="text-white/40">|</span>
-  <a 
-    href="/legal/cookies.html"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-white/60 text-sm underline hover:text-white/80 transition-colors"
-    style={{ fontFamily: 'Rockwell, serif' }}
-  >
-    Cookie Policy
-  </a>
-  </div>
 </div>
  );      {/* Zatvara return statement */}
 }   
