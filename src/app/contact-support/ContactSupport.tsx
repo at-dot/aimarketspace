@@ -4,53 +4,12 @@ import { useRouter } from 'next/navigation';
 
 export default function ContactSupport() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Rate limiting check - 15 minutes per email
-    const rateLimitKey = `contact_${formData.email}`;
-    const lastSubmit = localStorage.getItem(rateLimitKey);
-    const now = Date.now();
-    
-    if (lastSubmit && now - parseInt(lastSubmit) < 900000) { // 15 minutes = 900000ms
-      alert('Please allow 15 minutes between messages');
-      setIsSubmitting(false);
-      return;
-    }
-    
-    try {
-      const response = await fetch('https://formspree.io/f/manbqogb', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          message: formData.message,
-          _subject: 'AIMeetSpace Support Request'
-        }),
-      });
-
-      if (response.ok) {
-        // Save timestamp for rate limiting
-        localStorage.setItem(rateLimitKey, now.toString());
-        setIsSubmitted(true);
-      } else {
-        alert('Something went wrong. Please try again.');
-        setIsSubmitting(false);
-      }
-    } catch (error) {
-      alert('Something went wrong. Please try again.');
-      setIsSubmitting(false);
-    }
+  const handleCopy = () => {
+    navigator.clipboard.writeText('contact@aimeetplace.com');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   // Sparkle component
@@ -61,30 +20,6 @@ export default function ContactSupport() {
         stroke="none" />
     </svg>
   );
-
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-        {/* Background gradient */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-indigo-800 to-blue-700 animate-shimmer" />
-        </div>
-
-        {/* Success message */}
-        <div className="relative z-10 w-full max-w-2xl">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 text-center">
-            <div className="text-green-300 text-6xl mb-4">✓</div>
-            <h1 className="text-3xl text-white font-bold mb-4" style={{ fontFamily: 'Rockwell, serif' }}>
-              Thank you for reaching out!
-            </h1>
-            <p className="text-white/80 text-lg" style={{ fontFamily: 'Rockwell, serif' }}>
-              We typically respond within 5 business days
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
@@ -116,39 +51,19 @@ export default function ContactSupport() {
             We are here to help
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                Your Email <span className="text-red-300">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50"
-                style={{ fontFamily: 'Rockwell, serif' }}
-                placeholder="your@email.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-white mb-2" style={{ fontFamily: 'Rockwell, serif' }}>
-                Message <span className="text-red-300">*</span>
-              </label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/30 focus:border-white/50 min-h-[150px] resize-y"
-                style={{ fontFamily: 'Rockwell, serif' }}
-                placeholder="What can we assist you with?"
-                required
-              />
+          <div className="space-y-6">
+            <div className="text-center">
+              <p className="text-white mb-4" style={{ fontFamily: 'Rockwell, serif' }}>
+                Send us an email at:
+              </p>
+              <div className="bg-white/20 border border-white/30 rounded-lg p-4 mb-4">
+                <p className="text-white text-xl" style={{ fontFamily: 'Rockwell, serif' }}>
+                  contact@aimeetplace.com
+                </p>
+              </div>
             </div>
             
-            {/* Back button i Submit button */}
+            {/* Back button i Copy button */}
             <div className="flex gap-4">
               <button
                 type="button"
@@ -159,15 +74,14 @@ export default function ContactSupport() {
                 Back
               </button>
               <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleCopy}
+                className="flex-1 bg-white text-blue-600 py-3 px-4 rounded-lg font-bold hover:bg-white/90 transition-all transform hover:scale-[1.02] shadow-lg"
                 style={{ fontFamily: 'Rockwell, serif' }}
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {copied ? 'Copied!' : 'Copy Email'}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
 
